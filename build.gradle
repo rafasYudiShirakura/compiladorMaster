@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'antlr'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    // ANTLR v4 tool support. Used by the antlr plugin to generate parsers
+    antlr "org.antlr:antlr4:4.13.1" // Or your desired ANTLR version
+
+    // ANTLR v4 runtime. Your Main class and generated code will use this.
+    implementation "org.antlr:antlr4-runtime:4.13.1"
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+// Configure the ANTLR plugin
+generateGrammarSource {
+    arguments += ["-package", "org.example"]
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java' // Your manual Java code
+            srcDir "${project.buildDir}/generated-sources/antlr4" // ANTLR generated code
+        }
+    }
+}
+
+application {
+    mainClass = 'org.example.Main' // So Gradle knows what to run
+}
+
+test {
+    useJUnitPlatform()
+}
+
