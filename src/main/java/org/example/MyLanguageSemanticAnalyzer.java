@@ -5,10 +5,10 @@ package org.example;
 // e.g. import com.yourlanguage.parser.ObjectOrientedParserBaseListener;
 // import com.yourlanguage.parser.ObjectOrientedParser;
 
-public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener {
+public class MyLanguageSemanticAnalyzer extends org.example.ObjectOrientedParserBaseListener {
 
     @Override
-    public void enterClassDeclaration(ObjectOrientedParser.ClassDeclarationContext ctx) {
+    public void enterClassDeclaration(org.example.ObjectOrientedParser.ClassDeclarationContext ctx) {
         // ctx.IDENTIFIER() gives you the token for the class name
         String className = ctx.IDENTIFIER().getText();
         System.out.println("Entering class: " + className);
@@ -18,7 +18,7 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
     }
 
     @Override
-    public void exitClassDeclaration(ObjectOrientedParser.ClassDeclarationContext ctx) {
+    public void exitClassDeclaration(org.example.ObjectOrientedParser.ClassDeclarationContext ctx) {
         String className = ctx.IDENTIFIER().getText();
         System.out.println("Exiting class: " + className);
         // Here you would typically:
@@ -26,7 +26,7 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
     }
 
     @Override
-    public void enterMethodDeclaration(ObjectOrientedParser.MethodDeclarationContext ctx) {
+    public void enterMethodDeclaration(org.example.ObjectOrientedParser.MethodDeclarationContext ctx) {
         // ctx.IDENTIFIER() gives you the token for the method name
         String methodName = ctx.IDENTIFIER().getText();
         System.out.println("  Entering method: " + methodName);
@@ -54,7 +54,7 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
     }
 
     @Override
-    public void exitMethodDeclaration(ObjectOrientedParser.MethodDeclarationContext ctx) {
+    public void exitMethodDeclaration(org.example.ObjectOrientedParser.MethodDeclarationContext ctx) {
         String methodName = ctx.IDENTIFIER().getText();
         System.out.println("  Exiting method: " + methodName);
         // Here you would typically:

@@ -2,6 +2,7 @@ package org.example;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.FileInputStream;
@@ -43,9 +44,9 @@ public class Main {
     private static void processStream(CharStream input, String sourceName) throws Exception {
         System.out.println("Processing: " + sourceName);
 
-        ObjectOrientedLexer lexer = new ObjectOrientedLexer(input);
+        org.example.ObjectOrientedLexer lexer = new org.example.ObjectOrientedLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        ObjectOrientedParser parser = new ObjectOrientedParser(tokens);
+        org.example.ObjectOrientedParser parser = new org.example.ObjectOrientedParser(tokens);
 
         parser.removeErrorListeners();
         parser.addErrorListener(new BaseErrorListener() {
@@ -69,7 +70,7 @@ public class Main {
             System.out.println("\n--- Running Semantic Analyzer (Listener) ---");
             ParseTreeWalker walker = new ParseTreeWalker();
             MyLanguageSemanticAnalyzer semanticAnalyzer = new MyLanguageSemanticAnalyzer();
-            walker.walk(semanticAnalyzer, tree);
+            walker.walk((ParseTreeListener) semanticAnalyzer, tree);
             System.out.println("--- Semantic Analyzer Finished ---");
             // **************************************************
 

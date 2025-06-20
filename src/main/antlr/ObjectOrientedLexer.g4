@@ -1,7 +1,5 @@
-// Define the lexer grammar
 lexer grammar ObjectOrientedLexer;
 
-// Keywords - Hardware Themed
 CLASS:                      'componenteModelo';
 PUBLIC:                     'painelExterno';
 PRIVATE:                    'circuitoInterno';
@@ -23,13 +21,16 @@ RETURN:                     'transmitirDadoPeloBarramento';
 BOOLEAN_LITERAL:            'sinalAlto' | 'sinalBaixo';
 
 INTEGER_LITERAL:            DEC_LITERAL | BIN_LITERAL;
-fragment DEC_LITERAL:       '0' | [1-9] [0-9]*;
-fragment BIN_LITERAL:       '0' [bB] [01]+;
 
 FLOAT_LITERAL
-    :   [0-9]+ '.' [0-9]* ?
-    |   [0-9]+
+    :   [0-9]+ '.' [0-9]* EXPONENT?
+    |   '.' [0-9]+ EXPONENT?
+    |   [0-9]+ EXPONENT
     ;
+
+fragment DEC_LITERAL:       '0' | [1-9] [0-9]*;
+fragment BIN_LITERAL:       '0' [bB] [01]+;
+fragment EXPONENT: [eE] [+\-]? [0-9]+;
 
 CHAR_LITERAL:               '\'' ( EscapeSequence | ~['\\] ) '\'';
 STRING_LITERAL:             '"' ( EscapeSequence | ~["\\] )*? '"';
