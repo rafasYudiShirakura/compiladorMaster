@@ -1,0 +1,5 @@
+componenteModelo AdditionTest {
+  painelExterno sinalDeAck testAdd() {
+    frequenciaMHz result = 10 + 5;
+  }
+}
