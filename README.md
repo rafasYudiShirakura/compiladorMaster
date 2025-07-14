@@ -67,7 +67,7 @@ Exiting class: MyClass
 
 Parsing completed successfully for: test.mylang
 
-###NO CASO O TESTE NOS FAZ NO TEXTE.TXT TA OQUEI?
+### NO CASO O TESTE NOS FAZ NO TEXTE.TXT TA OQUEI? FAZ OS PATH CERTINHO PRA RODAR TA OH KEI?
 
 
     
