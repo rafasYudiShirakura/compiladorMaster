@@ -1,5 +1,5 @@
-// Generated from /home/rafas/IdeaProjects/compilerJava/src/main/java/org/example/ObjectOrientedParser.g4 by ANTLR 4.13.2
-package org.example;
+// Generated from /home/lucas-fedora/Desktop/compiladorMaster/src/main/java/org/example/antlr/ObjectOrientedParser.g4 by ANTLR 4.13.2
+package org.example.output.generated;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**

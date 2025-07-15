@@ -1,0 +1,20 @@
+componenteModelo TesteCompleto {
+  frequenciaMHz inteiro = 42;
+  tensaoVolts real = 3.14;
+  codigoPostDisplay caractere = 'A';
+  string texto = "Hello, LLVM!";
+
+  frequenciaMHz numeros = new frequenciaMHz[5];
+
+  painelExterno frequenciaMHz soma(frequenciaMHz a, frequenciaMHz b) {
+    transmitirDadoPeloBarramento a + b;
+  }
+
+  painelExterno frequenciaMHz verificaMaior(frequenciaMHz x, frequenciaMHz y) {
+    seSinalAtivo (x > y) {
+      transmitirDadoPeloBarramento x;
+    } rotaDeDadosAlternativa {
+      transmitirDadoPeloBarramento y;
+    }
+  }
+}

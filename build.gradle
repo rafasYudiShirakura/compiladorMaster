@@ -13,29 +13,27 @@ repositories {
 
 
 dependencies {
-    // ANTLR v4 tool support. Used by the antlr plugin to generate parsers
-    antlr "org.antlr:antlr4:4.13.1" // Or your desired ANTLR version
+    antlr "org.antlr:antlr4:4.13.1"
 
-    // ANTLR v4 runtime. Your Main class and generated code will use this.
     implementation "org.antlr:antlr4-runtime:4.13.1"
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
-// Configure the ANTLR plugin
 generateGrammarSource {
-    arguments += ["-package", "org.example"]
+    outputDirectory = file('src/main/java/org/example/output/generated')
+    arguments += ['-package', 'org.example.output.generated']
 }
 
 sourceSets {
     main {
         java {
-            srcDir 'src/main/java' // Your manual Java code
-            srcDir "${project.buildDir}/generated-sources/antlr4" // ANTLR generated code
+            srcDirs = ['src/main/org/example/output/generated', 'src/main/java']
         }
     }
 }
+
 
 application {
     mainClass = 'org.example.Main' // So Gradle knows what to run
