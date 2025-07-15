@@ -4,7 +4,9 @@ componenteModelo TesteCompleto {
   codigoPostDisplay caractere = 'A';
   string texto = "Hello, LLVM!";
 
-  frequenciaMHz numeros = new frequenciaMHz[5];
+  painelExterno circuitoIntegradoFinal frequenciaMHz[] numeros = {1, 2, 3, 4, 5};
+
+
 
   painelExterno frequenciaMHz soma(frequenciaMHz a, frequenciaMHz b) {
     transmitirDadoPeloBarramento a + b;
