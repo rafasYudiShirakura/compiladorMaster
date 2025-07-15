@@ -93,3 +93,5 @@ LINE_COMMENT:               '//' ~[\r\n]* -> skip;
 BLOCK_COMMENT:              '/*' .*? '*/' -> skip;
 
 WS:                         [ \t\r\n\u000C]+ -> skip;
+
+NEW:                        'new';

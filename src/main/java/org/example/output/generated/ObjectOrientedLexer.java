@@ -1,4 +1,5 @@
-// Generated from C:/dev/compila/compiladorMaster/src/main/antlr/ObjectOrientedLexer.g4 by ANTLR 4.13.2
+// Generated from /home/lucas-fedora/Desktop/compiladorMaster/src/main/java/org/example/antlr/ObjectOrientedLexer.g4 by ANTLR 4.13.2
+package org.example.output.generated;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;

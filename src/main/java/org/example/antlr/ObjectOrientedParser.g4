@@ -1,10 +1,7 @@
-// Define the parser grammar
 parser grammar ObjectOrientedParser;
 
-// Import tokens from the lexer
 options { tokenVocab = ObjectOrientedLexer; }
 
-// Starting rule: typically a compilation unit
 compilationUnit
     : packageDeclaration? importDeclaration* typeDeclaration* EOF;
 
@@ -17,7 +14,6 @@ importDeclaration
 qualifiedName
     : IDENTIFIER (DOT IDENTIFIER)*;
 
-// --- Type Declarations ---
 typeDeclaration
     : classDeclaration
     | interfaceDeclaration
@@ -428,4 +424,3 @@ parExpression // Used for if, while, etc.
 //LSHIFT: '<<'; // Placeholder if not in lexer
 //RSHIFT: '>>'; // Placeholder if not in lexer
 //URSHIFT: '>>>';// Placeholder if not in lexer
-
