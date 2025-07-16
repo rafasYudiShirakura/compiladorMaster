@@ -1,13 +1,11 @@
-
 package org.example;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-
-import org.example.output.generated.ObjectOrientedParser;
 import org.example.output.generated.ObjectOrientedLexer;
+import org.example.output.generated.ObjectOrientedParser;
+import org.example.ast.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,7 +14,12 @@ import java.io.InputStream;
 public class Main {
 
     public static void main(String[] args) {
-        String inputFile = "/home/lucas-fedora/Desktop/compiladorMaster/src/main/java/org/example/teste.txt";
+        if (args.length == 0) {
+            System.err.println("Por favor, forneça o caminho para o arquivo de entrada como um argumento.");
+            System.err.println("Exemplo: src/main/java/org/example/testeFinal.txt");
+            return;
+        }
+        String inputFile = args[0];
 
         System.out.println("Processing file: " + inputFile);
         System.out.println("=====================================");
@@ -26,7 +29,6 @@ public class Main {
             processStream(input, inputFile);
         } catch (IOException e) {
             System.err.println("Error reading file " + inputFile + ": " + e.getMessage());
-            System.err.println("Make sure the file exists in the project root directory.");
             e.printStackTrace();
         } catch (Exception e) {
             System.err.println("Error processing file " + inputFile + ": " + e.getMessage());
@@ -35,10 +37,6 @@ public class Main {
     }
 
     private static void processStream(CharStream input, String sourceName) throws Exception {
-        System.out.println("Input content:");
-        System.out.println(input.toString());
-        System.out.println("=====================================");
-
         ObjectOrientedLexer lexer = new ObjectOrientedLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         ObjectOrientedParser parser = new ObjectOrientedParser(tokens);
@@ -56,22 +54,44 @@ public class Main {
         ParseTree tree = parser.compilationUnit();
 
         if (parser.getNumberOfSyntaxErrors() == 0) {
-            System.out.println("✓ Parsing completed successfully");
-            System.out.println("\n--- Running Semantic Analysis ---");
+            System.out.println("Parsing completed successfully");
 
-            ParseTreeWalker walker = new ParseTreeWalker();
-            MyLanguageSemanticAnalyzer semanticAnalyzer = new MyLanguageSemanticAnalyzer();
-            walker.walk((ParseTreeListener) semanticAnalyzer, tree);
-
-            System.out.println("\n--- Semantic Analysis Results ---");
-            if (semanticAnalyzer.hasErrors()) {
-                System.out.println("❌ Semantic analysis completed with " + semanticAnalyzer.getErrors().size() + " error(s)");
+            System.out.println("\n--- Generating Abstract Syntax Tree (AST) ---");
+            ASTBuilder astBuilder = new ASTBuilder();
+            ASTNode astRoot = astBuilder.visit(tree);
+            
+            if (astRoot != null) {
+                ASTVisualizer.printAST(astRoot);
+                ASTVisualizer.saveASTToFile(astRoot, "ast_output.txt");
+                ASTVisualizer.saveDotFile(astRoot, "ast_graph.dot");
+                ASTVisualizer.printASTStatistics(astRoot);
+                
+                System.out.println("AST generation completed successfully!");
             } else {
-                System.out.println("✅ Semantic analysis completed successfully - No errors found");
+                System.out.println("Failed to generate AST");
+            }
+
+            System.out.println("\n--- Running Semantic Analysis ---");
+            MyLanguageSemanticAnalyzer semanticAnalyzer = new MyLanguageSemanticAnalyzer();
+            ParseTreeWalker.DEFAULT.walk(semanticAnalyzer, tree);
+
+            if (semanticAnalyzer.hasErrors()) {
+                System.out.println("Semantic analysis completed with " + semanticAnalyzer.getErrors().size() + " error(s).");
+                for(String error : semanticAnalyzer.getErrors()){
+                    System.err.println(error);
+                }
+            } else {
+                System.out.println("Semantic analysis completed successfully - No errors found.");
+
+                System.out.println("\n--- Generating Intermediate Code ---");
+                IntermediateCodeGenerator codeGenerator = new IntermediateCodeGenerator();
+                codeGenerator.visit(tree);
+                System.out.println(codeGenerator.getIRCode());
+                codeGenerator.generateFile("output.ll");
             }
 
         } else {
-            System.out.println("❌ Parsing failed with " + parser.getNumberOfSyntaxErrors() + " syntax error(s)");
+            System.out.println("Parsing failed with " + parser.getNumberOfSyntaxErrors() + " syntax error(s)");
         }
     }
 }

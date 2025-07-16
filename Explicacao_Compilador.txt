@@ -1,0 +1,284 @@
+EXPLICACAO COMPLETA DO COMPILADOR - RYAN OKONSKI
+
+================================================================================
+VISAO GERAL DO PROJETO
+================================================================================
+
+Este projeto implementa um compilador completo para uma linguagem orientada a objetos
+personalizada. O compilador processa codigo fonte de entrada e gera codigo intermediario
+LLVM IR como saida.
+
+================================================================================
+ESTRUTURA DO PROJETO
+================================================================================
+
+O compilador esta organizado nos seguintes modulos principais:
+
+1. ANALISE LEXICA E SINTATICA
+   - Utilizacao do ANTLR4 para geracao automatica do analisador lexico e sintatico
+   - Gramatica definida em ObjectOrientedLexer.g4 e ObjectOrientedParser.g4
+   - Arquivos gerados automaticamente em src/main/gen/
+
+2. ANALISE SEMANTICA  
+   - MyLanguageSemanticAnalyzer.java: Implementa verificacoes semanticas
+   - Verifica tipos, declaracoes de variaveis, compatibilidade de parametros
+   - Gerencia tabela de simbolos durante a analise
+
+3. GERACAO DE AST (ARVORE SINTATICA ABSTRATA)
+   - ASTBuilder.java: Constroi a AST a partir da arvore de parse
+   - Classes de nos da AST (ASTNode, ClassNode, MethodNode, etc.)
+   - ASTVisualizer.java: Visualiza e exporta a AST
+
+4. GERACAO DE CODIGO INTERMEDIARIO
+   - IntermediateCodeGenerator.java: Gera codigo LLVM IR
+   - Converte a AST para representacao intermediaria
+
+5. CLASSE PRINCIPAL
+   - Main.java: Coordena todas as fases do processo de compilacao
+
+================================================================================
+FLUXO DE EXECUCAO DO COMPILADOR
+================================================================================
+
+FASE 1: ANALISE LEXICA
+- O codigo fonte e tokenizado pelo ObjectOrientedLexer
+- Cada palavra, simbolo e numero e convertido em tokens
+- Tokens sao organizados em um stream para processamento
+
+FASE 2: ANALISE SINTATICA  
+- O ObjectOrientedParser processa o stream de tokens
+- Verifica se o codigo segue a gramatica definida
+- Constroi uma arvore de parse (Parse Tree)
+- Detecta e reporta erros sintaticos
+
+FASE 3: GERACAO DA AST
+- O ASTBuilder percorre a arvore de parse
+- Cria uma representacao mais limpa e estruturada (AST)
+- Remove informacoes desnecessarias da arvore de parse
+- Gera arquivos de visualizacao (.txt, .dot, .png)
+
+FASE 4: ANALISE SEMANTICA
+- MyLanguageSemanticAnalyzer percorre a AST
+- Verifica tipos de dados e compatibilidade
+- Valida declaracoes de variaveis e metodos
+- Gerencia escopo e tabela de simbolos
+- Detecta e reporta erros semanticos
+
+FASE 5: GERACAO DE CODIGO INTERMEDIARIO
+- IntermediateCodeGenerator converte AST para LLVM IR
+- Mapeia construcoes da linguagem para instrucoes LLVM
+- Gera arquivo output.ll com codigo intermediario
+
+================================================================================
+TIPOS DE DADOS SUPORTADOS
+================================================================================
+
+A linguagem suporta os seguintes tipos de dados:
+
+TIPOS NUMERICOS:
+- frequenciaMHz (equivalente a int)
+- enderecoDeBlocoEmDisco (equivalente a long)  
+- tensaoVolts (equivalente a float)
+- taxaTransferenciaGBpsPrecisa (equivalente a double)
+
+OUTROS TIPOS:
+- estadoEnergia (equivalente a boolean)
+- codigoPostDisplay (equivalente a char)
+- string (cadeia de caracteres)
+- void (sem retorno)
+
+TIPOS TRADICIONAIS TAMBEM SUPORTADOS:
+- int, long, float, double, boolean, char
+- inteiro, real, caractere, texto
+
+================================================================================
+FUNCIONALIDADES DA LINGUAGEM
+================================================================================
+
+ESTRUTURAS DE CONTROLE:
+- Declaracoes condicionais (if/else)
+- Loops (for, while) 
+- Comandos de retorno (return)
+
+ORIENTACAO A OBJETOS:
+- Declaracao de classes
+- Metodos com parametros e tipos de retorno
+- Campos/atributos de classe
+- Variaveis locais
+
+FUNCOES ESPECIAIS:
+- mostrarDisplay() - funcao de saida
+- lerEntradaSensor() - funcao de entrada
+
+================================================================================
+ARQUIVOS DE SAIDA GERADOS
+================================================================================
+
+O compilador gera os seguintes arquivos de saida:
+
+1. ast_output.txt - Representacao textual da AST
+2. ast_graph.dot - Arquivo DOT para visualizacao grafica da AST  
+3. ast_graph.png - Imagem da AST (se Graphviz estiver instalado)
+4. output.ll - Codigo intermediario LLVM IR
+
+================================================================================
+COMO EXECUTAR O COMPILADOR
+================================================================================
+
+1. Compile o projeto Java
+2. Execute: java org.example.Main <caminho_do_arquivo_fonte>
+3. Exemplo: java org.example.Main src/main/java/org/example/testeFinal.txt
+
+O compilador processara o arquivo de entrada e gerara todos os arquivos de saida
+na pasta raiz do projeto.
+
+================================================================================
+DETALHES TECNICOS DA IMPLEMENTACAO
+================================================================================
+
+ANALISE LEXICA E SINTATICA:
+- Utiliza ANTLR4 para geracao automatica dos analisadores
+- Gramatica LL(*) permite parsing eficiente
+- Tratamento de erros com listeners personalizados
+
+ANALISE SEMANTICA:
+- Implementa padrao Visitor para percorrer a AST
+- Tabela de simbolos com escopo hierarquico
+- Verificacao de tipos com promocao automatica
+- Validacao de chamadas de metodos e parametros
+
+GERACAO DE CODIGO:
+- Mapeia construcoes de alto nivel para LLVM IR
+- Gerenciamento de registradores temporarios
+- Geracao de labels para estruturas de controle
+- Suporte a arrays e tipos primitivos
+
+OTIMIZACOES:
+- Remocao de nos desnecessarios na AST
+- Reutilizacao de registradores temporarios
+- Deteccao precoce de erros semanticos
+
+================================================================================
+EXEMPLO DE CODIGO FONTE SUPORTADO
+================================================================================
+
+classe ExemploSensor {
+    frequenciaMHz frequencia;
+    tensaoVolts voltagem;
+    
+    public frequenciaMHz calcularFrequencia(tensaoVolts entrada) {
+        if (entrada > 3.3) {
+            return 100;
+        } else {
+            return 50;
+        }
+    }
+    
+    public void executar() {
+        mostrarDisplay("Iniciando sensor");
+        frequencia = calcularFrequencia(5.0);
+        mostrarDisplay("Frequencia calculada");
+    }
+}
+
+================================================================================
+TRATAMENTO DE ERROS
+================================================================================
+
+O compilador detecta e reporta varios tipos de erros:
+
+ERROS LEXICOS:
+- Caracteres invalidos
+- Tokens malformados
+
+ERROS SINTATICOS:  
+- Estrutura incorreta do codigo
+- Parenteses/chaves nao balanceados
+- Palavras-chave em posicoes incorretas
+
+ERROS SEMANTICOS:
+- Variaveis nao declaradas
+- Incompatibilidade de tipos
+- Metodos sem retorno quando esperado
+- Chamadas de funcao com parametros incorretos
+
+================================================================================
+ARQUITETURA INTERNA
+================================================================================
+
+PRINCIPAIS CLASSES E SUAS RESPONSABILIDADES:
+
+Main.java:
+- Ponto de entrada do compilador
+- Coordena todas as fases de compilacao
+- Gerencia fluxo de entrada e saida
+
+ObjectOrientedLexer/Parser:
+- Gerados automaticamente pelo ANTLR4
+- Implementam analise lexica e sintatica
+- Baseados na gramatica definida
+
+ASTBuilder.java:
+- Converte Parse Tree em AST
+- Implementa padrao Visitor
+- Cria nos especializados para cada construcao
+
+MyLanguageSemanticAnalyzer.java:
+- Implementa BaseListener do ANTLR4
+- Percorre a arvore durante o parsing
+- Mantem tabela de simbolos e detecta erros
+
+IntermediateCodeGenerator.java:
+- Herda de BaseVisitor
+- Mapeia construcoes para LLVM IR
+- Gerencia registradores e labels
+
+ASTNode e subclasses:
+- Representam diferentes tipos de nos da AST
+- Encapsulam informacoes especificas de cada construcao
+- Suportam navegacao hierarquica
+
+ASTVisualizer.java:
+- Gera representacoes visuais da AST
+- Exporta em multiplos formatos
+- Calcula estatisticas da arvore
+
+================================================================================
+CONSIDERACOES DE PERFORMANCE
+================================================================================
+
+O compilador foi projetado com as seguintes consideracoes de performance:
+
+1. Uso de HashMap para tabela de simbolos (O(1) para lookups)
+2. Percorrimento unico da AST para cada fase
+3. Geracao incremental de codigo intermediario
+4. Reutilizacao de objetos quando possivel
+5. Tratamento eficiente de strings com StringBuilder
+
+================================================================================
+EXTENSIBILIDADE
+================================================================================
+
+O design modular permite extensoes futuras:
+
+1. Novos tipos de dados: Adicionar ao mapeamento em toLLVMType()
+2. Novas construcoes: Estender gramatica e visitor patterns
+3. Otimizacoes: Adicionar fase de otimizacao apos geracao de codigo
+4. Backends alternativos: Substituir gerador LLVM por outros targets
+5. Analises estaticas: Adicionar verificacoes semanticas adicionais
+
+================================================================================
+CONCLUSAO
+================================================================================
+
+Este compilador demonstra a implementacao completa de todas as fases classicas
+da compilacao: analise lexica, sintatica, semantica e geracao de codigo. A
+arquitetura modular e o uso de ferramentas como ANTLR4 tornam o codigo
+maintivel e extensivel.
+
+O projeto serve como uma base solida para o desenvolvimento de compiladores
+mais complexos e pode ser facilmente adaptado para suportar novas
+funcionalidades da linguagem.
+
+A geracao de codigo LLVM IR garante que o output seja portavel e otimizavel
+por ferramentas maduras do ecossistema LLVM.

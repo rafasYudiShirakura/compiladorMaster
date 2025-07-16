@@ -16,13 +16,7 @@ DOUBLE:                     'taxaTransferenciaGBpsPrecisa';
 IF:                         'seSinalAtivo';
 ELSE:                       'rotaDeDadosAlternativa';
 FOR:                        'paraCadaPinoNoConector';
-WHILE:                      'enquantoConexaoAtiva';
-DO:                         'executarOperacao';
 RETURN:                     'transmitirDadoPeloBarramento';
-
-// I/O Functions
-PRINTF:                     'mostrarDisplay';
-SCANF:                      'lerEntradaSensor';
 
 BOOLEAN_LITERAL:            'sinalAlto' | 'sinalBaixo';
 
@@ -101,7 +95,3 @@ BLOCK_COMMENT:              '/*' .*? '*/' -> skip;
 WS:                         [ \t\r\n\u000C]+ -> skip;
 
 NEW:                        'new';
-THIS:                       'this';
-NULL_LITERAL:               'null';
-BREAK:                      'interromperProcesso';
-CONTINUE:                   'continuarFluxo';

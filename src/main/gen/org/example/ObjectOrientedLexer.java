@@ -1,5 +1,5 @@
-// Generated from C:/dev/compila/rafa/compiladorMaster/src/main/java/org/example/antlr/ObjectOrientedLexer.g4 by ANTLR 4.13.2
-package org.example.antlr;
+// Generated from C:/dev/compila/rafa/compiladorMaster/src/main/java/org/example/ObjectOrientedLexer.g4 by ANTLR 4.13.2
+package org.example;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
