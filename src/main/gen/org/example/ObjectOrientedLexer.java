@@ -1,4 +1,4 @@
-// Generated from C:/Users/rafas/Downloads/compiladorJava/src/main/java/org/example/ObjectOrientedLexer.g4 by ANTLR 4.13.2
+// Generated from C:/dev/compila/rafa/compiladorMaster/src/main/java/org/example/ObjectOrientedLexer.g4 by ANTLR 4.13.2
 package org.example;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

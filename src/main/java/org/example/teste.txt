@@ -4,16 +4,14 @@ componenteModelo TesteCompleto {
   codigoPostDisplay caractere = 'A';
   string texto = "Hello, LLVM!";
 
-  painelExterno circuitoIntegradoFinal frequenciaMHz[] numeros = {1, 2, 3, 4, 5};
-
-
+  frequenciaMHz[] numeros = {1, 2, 3, 4, 5};
 
   painelExterno frequenciaMHz soma(frequenciaMHz a, frequenciaMHz b) {
     transmitirDadoPeloBarramento a + b;
   }
 
   painelExterno frequenciaMHz verificaMaior(frequenciaMHz x, frequenciaMHz y) {
-    seSinalAtivo (x > y) {
+    seSinalAtivo (x >= y) {
       transmitirDadoPeloBarramento x;
     } rotaDeDadosAlternativa {
       transmitirDadoPeloBarramento y;

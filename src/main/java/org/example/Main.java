@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.example.output.generated.ObjectOrientedLexer;
 import org.example.output.generated.ObjectOrientedParser;
+import org.example.ast.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,10 +14,9 @@ import java.io.InputStream;
 public class Main {
 
     public static void main(String[] args) {
-        // Verifica se o caminho do arquivo foi passado como argumento
         if (args.length == 0) {
             System.err.println("Por favor, forneça o caminho para o arquivo de entrada como um argumento.");
-            System.err.println("Exemplo: src/main/java/org/example/teste.txt");
+            System.err.println("Exemplo: src/main/java/org/example/testeFinal.txt");
             return;
         }
         String inputFile = args[0];
@@ -54,22 +54,35 @@ public class Main {
         ParseTree tree = parser.compilationUnit();
 
         if (parser.getNumberOfSyntaxErrors() == 0) {
-            System.out.println("✓ Parsing completed successfully");
+            System.out.println("Parsing completed successfully");
 
-            // Análise Semântica
+            System.out.println("\n--- Generating Abstract Syntax Tree (AST) ---");
+            ASTBuilder astBuilder = new ASTBuilder();
+            ASTNode astRoot = astBuilder.visit(tree);
+            
+            if (astRoot != null) {
+                ASTVisualizer.printAST(astRoot);
+                ASTVisualizer.saveASTToFile(astRoot, "ast_output.txt");
+                ASTVisualizer.saveDotFile(astRoot, "ast_graph.dot");
+                ASTVisualizer.printASTStatistics(astRoot);
+                
+                System.out.println("AST generation completed successfully!");
+            } else {
+                System.out.println("Failed to generate AST");
+            }
+
             System.out.println("\n--- Running Semantic Analysis ---");
             MyLanguageSemanticAnalyzer semanticAnalyzer = new MyLanguageSemanticAnalyzer();
             ParseTreeWalker.DEFAULT.walk(semanticAnalyzer, tree);
 
             if (semanticAnalyzer.hasErrors()) {
-                System.out.println("❌ Semantic analysis completed with " + semanticAnalyzer.getErrors().size() + " error(s).");
+                System.out.println("Semantic analysis completed with " + semanticAnalyzer.getErrors().size() + " error(s).");
                 for(String error : semanticAnalyzer.getErrors()){
                     System.err.println(error);
                 }
             } else {
-                System.out.println("✅ Semantic analysis completed successfully - No errors found.");
+                System.out.println("Semantic analysis completed successfully - No errors found.");
 
-                // Geração de Código Intermediário
                 System.out.println("\n--- Generating Intermediate Code ---");
                 IntermediateCodeGenerator codeGenerator = new IntermediateCodeGenerator();
                 codeGenerator.visit(tree);
@@ -78,7 +91,7 @@ public class Main {
             }
 
         } else {
-            System.out.println("❌ Parsing failed with " + parser.getNumberOfSyntaxErrors() + " syntax error(s)");
+            System.out.println("Parsing failed with " + parser.getNumberOfSyntaxErrors() + " syntax error(s)");
         }
     }
 }

@@ -69,10 +69,9 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
             String varName = varCtx.IDENTIFIER().getText();
             symbolTable.put(varName, type);
 
-            if (varCtx.LBRACK().size() > 0) { // Declaração de Array
-                // Para simplificação, o tamanho do array é fixo em 10.
+            if (varCtx.LBRACK().size() > 0) {
                 llvmIr.append("@").append(varName).append(" = common global [10 x ").append(llvmType).append("] zeroinitializer, align 16\n");
-            } else { // Variável Global
+            } else {
                 llvmIr.append("@").append(varName).append(" = common global ").append(llvmType).append(" 0, align 4\n");
             }
         }
@@ -110,19 +109,16 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
         if (llvmReturnType.equals("void")) {
             llvmIr.append("  ret void\n");
         } else if (!llvmIr.toString().endsWith("ret i32 0\n")) {
-            // Garante um retorno para funções não-void, tratando o caso de não haver um `return` explícito no código fonte.
             llvmIr.append("  ret ").append(llvmReturnType).append(" 0\n");
         }
 
         llvmIr.append("}\n");
-        symbolTable.clear(); // Limpa a tabela de símbolos para o próximo método
+        symbolTable.clear();
         return null;
     }
 
     @Override
     public Void visitBlock(ObjectOrientedParser.BlockContext ctx) {
-        // A geração de código para as instruções dentro do bloco
-        // é tratada pelas regras filhas, como `statement`.
         return visitChildren(ctx);
     }
 
@@ -132,15 +128,13 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
             String value = ctx.expression(0).getText();
             String tempVar = newTemp();
 
-            // Simplificação: assumindo que o valor de retorno é uma variável ou literal
             if (symbolTable.containsKey(value)) {
                 String type = symbolTable.get(value);
                 String llvmType = toLLVMType(type);
                 llvmIr.append("  ").append(tempVar).append(" = load ").append(llvmType).append(", ").append(llvmType).append("* %").append(value).append(", align 4\n");
                 llvmIr.append("  ret ").append(llvmType).append(" ").append(tempVar).append("\n");
             } else {
-                // Literal
-                String llvmType = toLLVMType("inteiro"); // Assume inteiro por padrão
+                String llvmType = toLLVMType("inteiro");
                 if(value.contains(".")) llvmType = toLLVMType("real");
                 llvmIr.append("  ret ").append(llvmType).append(" ").append(value).append("\n");
             }
@@ -151,7 +145,6 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
             String elseLabel = newLabel();
             String endLabel = newLabel();
 
-            // Avalia a condição do 'if'
             visit(ctx.parExpression().expression());
             String lastTemp = "%t" + (tempVarCounter - 1);
 
@@ -178,9 +171,7 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
 
     @Override
     public Void visitExpression(ObjectOrientedParser.ExpressionContext ctx) {
-        // Tratamento simplificado de expressões
         if (ctx.assignmentExpression() != null && ctx.assignmentExpression().conditionalExpression().size() > 1) {
-            // Lógica de atribuição...
         } else if (ctx.assignmentExpression() != null && ctx.assignmentExpression().getText().contains("+")) {
             String[] parts = ctx.assignmentExpression().getText().split("\\+");
             String left = parts[0].trim();
