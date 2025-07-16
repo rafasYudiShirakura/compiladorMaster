@@ -1,0 +1,63 @@
+componenteModelo TesteCompleto {
+  // Tipos de dados básicos
+  frequenciaMHz inteiro = 42;
+  tensaoVolts real = 3.14;
+  codigoPostDisplay caractere = 'A';
+  string texto = "Hello, LLVM!";
+  
+  // Vetor
+  frequenciaMHz[] numeros = {1, 2, 3, 4, 5};
+  
+  // Método com I/O (printf/scanf equivalentes)
+  painelExterno sinalDeAck exemploIO() {
+    mostrarDisplay("Digite um numero: ");
+    frequenciaMHz valor = lerEntradaSensor();
+    mostrarDisplay("Valor lido: ");
+    mostrarDisplay(valor);
+  }
+  
+  // Método com estrutura de repetição (FOR loop)
+  painelExterno frequenciaMHz somaVetor(frequenciaMHz[] arr) {
+    frequenciaMHz soma = 0;
+    paraCadaPinoNoConector (frequenciaMHz i = 0; i < 5; i++) {
+      soma = soma + arr[i];
+    }
+    transmitirDadoPeloBarramento soma;
+  }
+  
+  // Método com estrutura de repetição (WHILE loop)
+  painelExterno frequenciaMHz fatorial(frequenciaMHz n) {
+    frequenciaMHz resultado = 1;
+    frequenciaMHz i = 1;
+    enquantoConexaoAtiva (i <= n) {
+      resultado = resultado * i;
+      i = i + 1;
+    }
+    transmitirDadoPeloBarramento resultado;
+  }
+  
+  // Método com estrutura de decisão
+  painelExterno frequenciaMHz verificaMaior(frequenciaMHz x, frequenciaMHz y) {
+    seSinalAtivo (x >= y) {
+      transmitirDadoPeloBarramento x;
+    } rotaDeDadosAlternativa {
+      transmitirDadoPeloBarramento y;
+    }
+  }
+  
+  // Método que chama outras funções
+  painelExterno sinalDeAck principal() {
+    frequenciaMHz a = 10;
+    frequenciaMHz b = 20;
+    frequenciaMHz maior = verificaMaior(a, b);
+    frequenciaMHz fat = fatorial(5);
+    frequenciaMHz somaArray = somaVetor(numeros);
+    
+    mostrarDisplay("Maior valor: ");
+    mostrarDisplay(maior);
+    mostrarDisplay("Fatorial de 5: ");
+    mostrarDisplay(fat);
+    mostrarDisplay("Soma do array: ");
+    mostrarDisplay(somaArray);
+  }
+}

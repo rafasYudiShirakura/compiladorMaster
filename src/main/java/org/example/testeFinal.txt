@@ -1,0 +1,63 @@
+componenteModelo CompiladorCompleto {
+  // 1) Tipos de dados: inteiros, reais, caracteres e strings
+  frequenciaMHz inteiro = 42;
+  tensaoVolts real = 3.14159;
+  codigoPostDisplay caractere = 'X';
+  string texto = "Compilador Orientado a Objetos";
+  
+  // 4) Vetores
+  frequenciaMHz[] numeros = {10, 20, 30, 40, 50};
+  tensaoVolts[] decimais = {1.1, 2.2, 3.3, 4.4};
+  
+  // 5) Chamadas de funções - Método simples
+  painelExterno frequenciaMHz soma(frequenciaMHz a, frequenciaMHz b) {
+    transmitirDadoPeloBarramento a + b;
+  }
+  
+  // 5) Chamadas de funções - Método com operações
+  painelExterno frequenciaMHz multiplicacao(frequenciaMHz x, frequenciaMHz y) {
+    frequenciaMHz resultado = x * y;
+    transmitirDadoPeloBarramento resultado;
+  }
+  
+  // 2) Estrutura de decisão (if/else)
+  painelExterno frequenciaMHz maiorValor(frequenciaMHz num1, frequenciaMHz num2) {
+    seSinalAtivo (num1 > num2) {
+      transmitirDadoPeloBarramento num1;
+    } rotaDeDadosAlternativa {
+      transmitirDadoPeloBarramento num2;
+    }
+  }
+  
+  // 2) Estrutura de decisão aninhada
+  painelExterno string classificarNumero(frequenciaMHz valor) {
+    seSinalAtivo (valor > 0) {
+      seSinalAtivo (valor > 100) {
+        transmitirDadoPeloBarramento "Grande";
+      } rotaDeDadosAlternativa {
+        transmitirDadoPeloBarramento "Pequeno Positivo";
+      }
+    } rotaDeDadosAlternativa {
+      transmitirDadoPeloBarramento "Negativo ou Zero";
+    }
+  }
+  
+  // 5) Funções que chamam outras funções
+  painelExterno frequenciaMHz calcularExpressao(frequenciaMHz a, frequenciaMHz b, frequenciaMHz c) {
+    frequenciaMHz resultado = a + b + c;
+    transmitirDadoPeloBarramento resultado;
+  }
+  
+  // Método com múltiplas operações
+  painelExterno tensaoVolts operacoesComplexas(tensaoVolts x, tensaoVolts y) {
+    tensaoVolts resultado1 = x + y;
+    tensaoVolts resultado2 = x * y;
+    tensaoVolts resultado3 = resultado1 / resultado2;
+    
+    seSinalAtivo (resultado3 > 1.0) {
+      transmitirDadoPeloBarramento resultado3;
+    } rotaDeDadosAlternativa {
+      transmitirDadoPeloBarramento 1.0;
+    }
+  }
+}
