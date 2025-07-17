@@ -1,88 +1,10 @@
 === Árvore de sintaxe abstrata (AST) ===
-AST Raiz: Class: TesteCompleto
-├── Class: TesteCompleto
-  ├── Field: frequenciaMHz inteiro = 42
+AST Raiz: Class: TesteErro
+├── Class: TesteErro
+  ├── Field: frequenciaMHz numero = "texto"
+    ├── Literal: STRING = "texto"
+  ├── Field: tipoInexistente variavel = 42
     ├── Literal: INTEGER = 42
-  ├── Field: tensaoVolts real = 3.14
-    ├── Literal: FLOAT = 3.14
-  ├── Field: codigoPostDisplay caractere = 'A'
-    ├── Literal: CHAR = 'A'
-  ├── Field: string texto = "Hello, LLVM!"
-    ├── Literal: STRING = "Hello, LLVM!"
-  ├── Field: frequenciaMHz[] numeros = {1,2,3,4,5}
-    ├── Array Initializer
-      ├── Literal: INTEGER = 1
-      ├── Literal: INTEGER = 2
-      ├── Literal: INTEGER = 3
-      ├── Literal: INTEGER = 4
-      ├── Literal: INTEGER = 5
-  ├── Method: public sinalDeAck exemploIO()
+  ├── Method: public sinalDeAck metodoSemRetorno()
     ├── Bloco
-      ├── Statement: PRINTF
-        ├── Literal: STRING = "Digite um numero: "
-      ├── Statement: PRINTF
-        ├── Literal: STRING = "Valor lido: "
-      ├── Statement: PRINTF
-        ├── Expression: IDENTIFIER [valor]
-  ├── Method: public frequenciaMHz somaVetor()
-    ├── Parameters
-      ├── Parameter: frequenciaMHz[] arr
-    ├── Bloco
-      ├── Field: frequenciaMHz soma = 0
-        ├── Literal: INTEGER = 0
-      ├── Statement: UNKNOWN (paraCadaPinoNoConector(frequenciaMHzi=0;i<5;i++){soma=soma+arr[i];})
-      ├── Statement: RETURN
-        ├── Expression: IDENTIFIER [soma]
-  ├── Method: public frequenciaMHz fatorial()
-    ├── Parameters
-      ├── Parameter: frequenciaMHz n
-    ├── Bloco
-      ├── Field: frequenciaMHz resultado = 1
-        ├── Literal: INTEGER = 1
-      ├── Field: frequenciaMHz i = 1
-        ├── Literal: INTEGER = 1
-      ├── Statement: UNKNOWN (enquantoConexaoAtiva(i<=n){resultado=resultado*i;i=i+1;})
-      ├── Statement: RETURN
-        ├── Expression: IDENTIFIER [resultado]
-  ├── Method: public frequenciaMHz verificaMaior()
-    ├── Parameters
-      ├── Parameter: frequenciaMHz x
-      ├── Parameter: frequenciaMHz y
-    ├── Bloco
-      ├── Statement: IF
-        ├── Multiple Results
-          ├── Expression: IDENTIFIER [x]
-          ├── Expression: IDENTIFIER [y]
-        ├── Bloco
-          ├── Statement: RETURN
-            ├── Expression: IDENTIFIER [x]
-        ├── Bloco
-          ├── Statement: RETURN
-            ├── Expression: IDENTIFIER [y]
-  ├── Method: public sinalDeAck principal()
-    ├── Bloco
-      ├── Field: frequenciaMHz a = 10
-        ├── Literal: INTEGER = 10
-      ├── Field: frequenciaMHz b = 20
-        ├── Literal: INTEGER = 20
-      ├── Field: frequenciaMHz maior = verificaMaior(a,b)
-        ├── Multiple Results
-          ├── Expression: IDENTIFIER [a]
-          ├── Expression: IDENTIFIER [b]
-      ├── Field: frequenciaMHz fat = fatorial(5)
-        ├── Literal: INTEGER = 5
-      ├── Field: frequenciaMHz somaArray = somaVetor(numeros)
-        ├── Expression: IDENTIFIER [numeros]
-      ├── Statement: PRINTF
-        ├── Literal: STRING = "Maior valor: "
-      ├── Statement: PRINTF
-        ├── Expression: IDENTIFIER [maior]
-      ├── Statement: PRINTF
-        ├── Literal: STRING = "Fatorial de 5: "
-      ├── Statement: PRINTF
-        ├── Expression: IDENTIFIER [fat]
-      ├── Statement: PRINTF
-        ├── Literal: STRING = "Soma do array: "
-      ├── Statement: PRINTF
-        ├── Expression: IDENTIFIER [somaArray]
 ===================================

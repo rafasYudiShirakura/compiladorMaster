@@ -62,7 +62,7 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
             } else if (ctx.typeOrVoid().type() != null) {
                 tipoRetornoMetodoAtual = ctx.typeOrVoid().type().getText();
                 if (!tiposPermitidos.contains(tipoRetornoMetodoAtual)) {
-                    erros.add("Tipo de retorno inválido para o método '" + nomeMetodo + "': '" + tipoRetornoMetodoAtual + "'.");
+                    adicionarErro(ctx, "Tipo de retorno inválido para o método '" + nomeMetodo + "': '" + tipoRetornoMetodoAtual + "'.");
                 }
             }
         }
@@ -93,7 +93,7 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
         }
 
         if (tipoRetornoMetodoAtual != null && !tipoRetornoMetodoAtual.equals("void") && !metodoTemRetorno) {
-            erros.add("Método '" + nomeMetodo + "' com tipo de retorno '" + tipoRetornoMetodoAtual + "' deve ter pelo menos uma instrução de retorno.");
+            adicionarErro(ctx, "Método '" + nomeMetodo + "' com tipo de retorno '" + tipoRetornoMetodoAtual + "' deve ter pelo menos uma instrução de retorno.");
         }
         System.out.println("  Saindo do método: " + nomeMetodo);
         tipoRetornoMetodoAtual = null;
@@ -104,7 +104,7 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
     public void enterFieldDeclaration(ObjectOrientedParser.FieldDeclarationContext ctx) {
         String tipo = ctx.type().getText();
         if(!TIPOS_SUPORTADOS.contains(tipo) && !tipo.endsWith("[]")){
-            erros.add("Tipo não suportado: " + tipo);
+            adicionarErro(ctx, "Tipo não suportado: " + tipo);
         }
         for (ObjectOrientedParser.VariableDeclaratorContext varCtx : ctx.variableDeclaratorList().variableDeclarator()) {
             String nomeVariavel = varCtx.IDENTIFIER().getText();
@@ -123,7 +123,7 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
         if (ctx.type() != null) {
             String tipo = ctx.type().getText();
             if(!TIPOS_SUPORTADOS.contains(tipo) && !tipo.endsWith("[]")){
-                erros.add("Tipo não suportado: " + tipo);
+                adicionarErro(ctx, "Tipo não suportado: " + tipo);
             }
             for (ObjectOrientedParser.VariableDeclaratorContext varCtx : ctx.variableDeclaratorList().variableDeclarator()) {
                 String nomeVariavel = varCtx.IDENTIFIER().getText();
@@ -215,12 +215,12 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
         if (initCtx.expression() != null) {
             String tipoExpressao = obterTipoExpressao(initCtx.expression());
             if (!tipoEhCompativel(tipoDeclarado, tipoExpressao)) {
-                erros.add("Incompatibilidade de tipos para a variável '" + nomeVariavel + "': não é possível converter de '" + 
+                adicionarErro(initCtx, "Incompatibilidade de tipos para a variável '" + nomeVariavel + "': não é possível converter de '" + 
                           tipoExpressao + "' para '" + tipoDeclarado + "'");
             }
         } else if (initCtx.arrayInitializer() != null) {
             if (!tipoDeclarado.endsWith("[]")) {
-                erros.add("Não é possível atribuir inicializador de array para variável não-array '" + nomeVariavel + "'");
+                adicionarErro(initCtx, "Não é possível atribuir inicializador de array para variável não-array '" + nomeVariavel + "'");
             } else {
                 String tipoElemento = tipoDeclarado.substring(0, tipoDeclarado.length() - 2);
                 verificarCompatibilidadeInicializadorArray(tipoElemento, initCtx.arrayInitializer(), nomeVariavel);
@@ -465,5 +465,12 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
 
     public boolean temErros() {
         return !erros.isEmpty();
+    }
+
+    private void adicionarErro(org.antlr.v4.runtime.ParserRuleContext ctx, String mensagem) {
+        int linha = ctx.getStart().getLine();
+        int coluna = ctx.getStart().getCharPositionInLine();
+        String erroFormatado = String.format("ERRO SEMÂNTICO na linha %d:%d - %s", linha, coluna, mensagem);
+        erros.add(erroFormatado);
     }
 }

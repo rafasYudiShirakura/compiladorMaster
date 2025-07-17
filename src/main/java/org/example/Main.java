@@ -16,7 +16,7 @@ public class Main {
     public static void main(String[] args) {
         if (args.length == 0) {
             System.err.println("Por favor, forneça o caminho para o arquivo de entrada como um argumento.");
-            System.err.println("Exemplo: src/main/java/org/example/testeCompleto.txt");
+            System.err.println("Exemplo: src/main/java/org/example/testeErroSemantico.txt");
             return;
         }
         String arquivoEntrada = args[0];
@@ -39,6 +39,10 @@ public class Main {
     private static void processarFluxo(CharStream entrada, String nomeOrigem) throws Exception {
         ObjectOrientedLexer analisadorLexico = new ObjectOrientedLexer(entrada);
         CommonTokenStream tokens = new CommonTokenStream(analisadorLexico);
+        
+        System.out.println("\n--- Análise Léxica - Tokens Encontrados ---");
+        exibirTokens(tokens);
+        
         ObjectOrientedParser analisadorSintatico = new ObjectOrientedParser(tokens);
 
         analisadorSintatico.removeErrorListeners();
@@ -93,5 +97,113 @@ public class Main {
         } else {
             System.out.println("Análise sintática falhou com " + analisadorSintatico.getNumberOfSyntaxErrors() + " erro(s) sintático(s)");
         }
+    }
+
+    private static void exibirTokens(CommonTokenStream tokens) {
+        ObjectOrientedLexer lexer = (ObjectOrientedLexer) tokens.getTokenSource();
+        tokens.fill();
+        
+        System.out.println("Total de tokens encontrados: " + tokens.size());
+        System.out.println("Formato: [Tipo] Valor (Linha:Coluna)");
+        System.out.println("----------------------------------------");
+        
+        for (int i = 0; i < tokens.size(); i++) {
+            Token token = tokens.get(i);
+            
+            if (token.getType() == Token.EOF) {
+                System.out.println("[EOF] <fim_do_arquivo> (" + token.getLine() + ":" + token.getCharPositionInLine() + ")");
+                break;
+            }
+            
+            String nomeToken = obterNomeTokenSimbolico(token.getType());
+            String valor = token.getText();
+            
+            if (valor.equals("\n") || valor.equals("\r\n")) {
+                valor = "<nova_linha>";
+            } else if (valor.equals("\t")) {
+                valor = "<tab>";
+            } else if (valor.equals(" ")) {
+                valor = "<espaço>";
+            }
+            
+            System.out.printf("[%s] %s (%d:%d)%n", 
+                nomeToken, 
+                valor, 
+                token.getLine(), 
+                token.getCharPositionInLine());
+        }
+        
+        System.out.println("----------------------------------------");
+    }
+    
+    private static String obterNomeTokenSimbolico(int tipoToken) {
+        String[] nomesSimbolicos = ObjectOrientedLexer.VOCABULARY.getSymbolicName(tipoToken) != null ? 
+            new String[]{ObjectOrientedLexer.VOCABULARY.getSymbolicName(tipoToken)} : 
+            new String[]{"DESCONHECIDO"};
+        
+        if (nomesSimbolicos[0] != null) {
+            return nomesSimbolicos[0];
+        }
+
+        return switch (tipoToken) {
+            case ObjectOrientedLexer.CLASS -> "CLASS";
+            case ObjectOrientedLexer.PUBLIC -> "PUBLIC";
+            case ObjectOrientedLexer.PRIVATE -> "PRIVATE";
+            case ObjectOrientedLexer.FINAL -> "FINAL";
+            case ObjectOrientedLexer.VOID -> "VOID";
+            case ObjectOrientedLexer.BOOLEAN -> "BOOLEAN";
+            case ObjectOrientedLexer.CHAR -> "CHAR";
+            case ObjectOrientedLexer.INT -> "INT";
+            case ObjectOrientedLexer.LONG -> "LONG";
+            case ObjectOrientedLexer.FLOAT -> "FLOAT";
+            case ObjectOrientedLexer.DOUBLE -> "DOUBLE";
+            case ObjectOrientedLexer.IF -> "IF";
+            case ObjectOrientedLexer.ELSE -> "ELSE";
+            case ObjectOrientedLexer.FOR -> "FOR";
+            case ObjectOrientedLexer.WHILE -> "WHILE";
+            case ObjectOrientedLexer.DO -> "DO";
+            case ObjectOrientedLexer.RETURN -> "RETURN";
+            case ObjectOrientedLexer.PRINTF -> "PRINTF";
+            case ObjectOrientedLexer.SCANF -> "SCANF";
+            case ObjectOrientedLexer.BOOLEAN_LITERAL -> "BOOLEAN_LITERAL";
+            case ObjectOrientedLexer.INTEGER_LITERAL -> "INTEGER_LITERAL";
+            case ObjectOrientedLexer.FLOAT_LITERAL -> "FLOAT_LITERAL";
+            case ObjectOrientedLexer.CHAR_LITERAL -> "CHAR_LITERAL";
+            case ObjectOrientedLexer.STRING_LITERAL -> "STRING_LITERAL";
+            case ObjectOrientedLexer.IDENTIFIER -> "IDENTIFIER";
+            case ObjectOrientedLexer.LPAREN -> "LPAREN";
+            case ObjectOrientedLexer.RPAREN -> "RPAREN";
+            case ObjectOrientedLexer.LBRACE -> "LBRACE";
+            case ObjectOrientedLexer.RBRACE -> "RBRACE";
+            case ObjectOrientedLexer.LBRACK -> "LBRACK";
+            case ObjectOrientedLexer.RBRACK -> "RBRACK";
+            case ObjectOrientedLexer.SEMI -> "SEMI";
+            case ObjectOrientedLexer.COMMA -> "COMMA";
+            case ObjectOrientedLexer.DOT -> "DOT";
+            case ObjectOrientedLexer.ASSIGN -> "ASSIGN";
+            case ObjectOrientedLexer.GT -> "GT";
+            case ObjectOrientedLexer.LT -> "LT";
+            case ObjectOrientedLexer.BANG -> "BANG";
+            case ObjectOrientedLexer.TILDE -> "TILDE";
+            case ObjectOrientedLexer.QUESTION -> "QUESTION";
+            case ObjectOrientedLexer.COLON -> "COLON";
+            case ObjectOrientedLexer.EQUAL -> "EQUAL";
+            case ObjectOrientedLexer.LE -> "LE";
+            case ObjectOrientedLexer.GE -> "GE";
+            case ObjectOrientedLexer.NOTEQUAL -> "NOTEQUAL";
+            case ObjectOrientedLexer.AND -> "AND";
+            case ObjectOrientedLexer.OR -> "OR";
+            case ObjectOrientedLexer.INC -> "INC";
+            case ObjectOrientedLexer.DEC -> "DEC";
+            case ObjectOrientedLexer.ADD -> "ADD";
+            case ObjectOrientedLexer.SUB -> "SUB";
+            case ObjectOrientedLexer.MUL -> "MUL";
+            case ObjectOrientedLexer.DIV -> "DIV";
+            case ObjectOrientedLexer.BITAND -> "BITAND";
+            case ObjectOrientedLexer.BITOR -> "BITOR";
+            case ObjectOrientedLexer.CARET -> "CARET";
+            case ObjectOrientedLexer.MOD -> "MOD";
+            default -> "TOKEN_" + tipoToken;
+        };
     }
 }

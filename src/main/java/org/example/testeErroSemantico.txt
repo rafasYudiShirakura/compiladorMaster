@@ -1,0 +1,8 @@
+componenteModelo TesteErro {
+    frequenciaMHz numero = "texto"; // Erro: tipo incorreto
+    tipoInexistente variavel = 42;  // Erro: tipo não suportado
+    
+    painelExterno sinalDeAck metodoSemRetorno() {
+        // Erro: método deveria retornar algo mas não tem return
+    }
+}
