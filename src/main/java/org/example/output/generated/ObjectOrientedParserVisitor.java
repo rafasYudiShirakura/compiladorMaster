@@ -1,4 +1,4 @@
-// Generated from /home/lucas-fedora/Desktop/compiladorMaster/src/main/java/org/example/antlr/ObjectOrientedParser.g4 by ANTLR 4.13.2
+// Generated from ObjectOrientedParser.g4 by ANTLR 4.13.1
 package org.example.output.generated;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -287,6 +287,12 @@ public interface ObjectOrientedParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStatement(ObjectOrientedParser.StatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link ObjectOrientedParser#ioStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIoStatement(ObjectOrientedParser.IoStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link ObjectOrientedParser#expressionStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -364,6 +370,12 @@ public interface ObjectOrientedParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPrimary(ObjectOrientedParser.PrimaryContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link ObjectOrientedParser#ioExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIoExpression(ObjectOrientedParser.IoExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link ObjectOrientedParser#literal}.
 	 * @param ctx the parse tree

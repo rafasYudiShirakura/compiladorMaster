@@ -20,6 +20,7 @@ WHILE:                      'enquantoConexaoAtiva';
 DO:                         'executarOperacao';
 RETURN:                     'transmitirDadoPeloBarramento';
 
+// I/O Functions
 PRINTF:                     'mostrarDisplay';
 SCANF:                      'lerEntradaSensor';
 
@@ -42,7 +43,7 @@ STRING_LITERAL:             '"' ( EscapeSequence | ~["\\] )*? '"';
 
 fragment EscapeSequence
     :   '\\' [btnfr"'\\]
-    |   '\\' 'u' HexDigit HexDigit HexDigit HexDigit
+    |   '\\' 'u' HexDigit HexDigit HexDigit HexDigit // Unicode escape
     ;
 fragment HexDigit:          [0-9a-fA-F];
 

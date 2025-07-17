@@ -1,4 +1,4 @@
-// Generated from /home/lucas-fedora/Desktop/compiladorMaster/src/main/java/org/example/antlr/ObjectOrientedParser.g4 by ANTLR 4.13.2
+// Generated from ObjectOrientedParser.g4 by ANTLR 4.13.1
 package org.example.output.generated;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -569,6 +569,18 @@ public class ObjectOrientedParserBaseListener implements ObjectOrientedParserLis
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterIoStatement(ObjectOrientedParser.IoStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIoStatement(ObjectOrientedParser.IoStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExpressionStatement(ObjectOrientedParser.ExpressionStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -720,6 +732,18 @@ public class ObjectOrientedParserBaseListener implements ObjectOrientedParserLis
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPrimary(ObjectOrientedParser.PrimaryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIoExpression(ObjectOrientedParser.IoExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIoExpression(ObjectOrientedParser.IoExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

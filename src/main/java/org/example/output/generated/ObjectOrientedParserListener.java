@@ -1,4 +1,4 @@
-// Generated from /home/lucas-fedora/Desktop/compiladorMaster/src/main/java/org/example/antlr/ObjectOrientedParser.g4 by ANTLR 4.13.2
+// Generated from ObjectOrientedParser.g4 by ANTLR 4.13.1
 package org.example.output.generated;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -468,6 +468,16 @@ public interface ObjectOrientedParserListener extends ParseTreeListener {
 	 */
 	void exitStatement(ObjectOrientedParser.StatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ObjectOrientedParser#ioStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterIoStatement(ObjectOrientedParser.IoStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ObjectOrientedParser#ioStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitIoStatement(ObjectOrientedParser.IoStatementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ObjectOrientedParser#expressionStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -597,6 +607,16 @@ public interface ObjectOrientedParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPrimary(ObjectOrientedParser.PrimaryContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ObjectOrientedParser#ioExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterIoExpression(ObjectOrientedParser.IoExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ObjectOrientedParser#ioExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitIoExpression(ObjectOrientedParser.IoExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ObjectOrientedParser#literal}.
 	 * @param ctx the parse tree

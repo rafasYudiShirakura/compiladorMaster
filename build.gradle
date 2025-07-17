@@ -23,7 +23,7 @@ dependencies {
 
 generateGrammarSource {
     outputDirectory = file('src/main/java/org/example/output/generated')
-    arguments += ['-package', 'org.example.output.generated']
+    arguments += ['-package', 'org.example.output.generated', '-visitor']
 }
 
 sourceSets {

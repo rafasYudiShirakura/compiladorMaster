@@ -16,82 +16,82 @@ public class Main {
     public static void main(String[] args) {
         if (args.length == 0) {
             System.err.println("Por favor, forneça o caminho para o arquivo de entrada como um argumento.");
-            System.err.println("Exemplo: src/main/java/org/example/testeFinal.txt");
+            System.err.println("Exemplo: src/main/java/org/example/testeCompleto.txt");
             return;
         }
-        String inputFile = args[0];
+        String arquivoEntrada = args[0];
 
-        System.out.println("Processing file: " + inputFile);
+        System.out.println("Processando arquivo: " + arquivoEntrada);
         System.out.println("=====================================");
 
-        try (InputStream is = new FileInputStream(inputFile)) {
-            CharStream input = CharStreams.fromStream(is);
-            processStream(input, inputFile);
+        try (InputStream is = new FileInputStream(arquivoEntrada)) {
+            CharStream entrada = CharStreams.fromStream(is);
+            processarFluxo(entrada, arquivoEntrada);
         } catch (IOException e) {
-            System.err.println("Error reading file " + inputFile + ": " + e.getMessage());
+            System.err.println("Erro ao ler arquivo " + arquivoEntrada + ": " + e.getMessage());
             e.printStackTrace();
         } catch (Exception e) {
-            System.err.println("Error processing file " + inputFile + ": " + e.getMessage());
+            System.err.println("Erro ao processar arquivo " + arquivoEntrada + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private static void processStream(CharStream input, String sourceName) throws Exception {
-        ObjectOrientedLexer lexer = new ObjectOrientedLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        ObjectOrientedParser parser = new ObjectOrientedParser(tokens);
+    private static void processarFluxo(CharStream entrada, String nomeOrigem) throws Exception {
+        ObjectOrientedLexer analisadorLexico = new ObjectOrientedLexer(entrada);
+        CommonTokenStream tokens = new CommonTokenStream(analisadorLexico);
+        ObjectOrientedParser analisadorSintatico = new ObjectOrientedParser(tokens);
 
-        parser.removeErrorListeners();
-        parser.addErrorListener(new BaseErrorListener() {
+        analisadorSintatico.removeErrorListeners();
+        analisadorSintatico.addErrorListener(new BaseErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
                                     int line, int charPositionInLine, String msg,
                                     RecognitionException e) {
-                System.err.println("SYNTAX ERROR at line " + line + ":" + charPositionInLine + " " + msg);
+                System.err.println("ERRO SINTÁTICO na linha " + line + ":" + charPositionInLine + " " + msg);
             }
         });
 
-        ParseTree tree = parser.compilationUnit();
+        ParseTree arvore = analisadorSintatico.compilationUnit();
 
-        if (parser.getNumberOfSyntaxErrors() == 0) {
-            System.out.println("Parsing completed successfully");
+        if (analisadorSintatico.getNumberOfSyntaxErrors() == 0) {
+            System.out.println("Análise sintática concluída com sucesso");
 
-            System.out.println("\n--- Generating Abstract Syntax Tree (AST) ---");
-            ASTBuilder astBuilder = new ASTBuilder();
-            ASTNode astRoot = astBuilder.visit(tree);
+            System.out.println("\n--- Gerando Árvore Sintática Abstrata (AST) ---");
+            ASTBuilder construtor = new ASTBuilder();
+            ASTNode raizAST = construtor.visit(arvore);
             
-            if (astRoot != null) {
-                ASTVisualizer.printAST(astRoot);
-                ASTVisualizer.saveASTToFile(astRoot, "ast_output.txt");
-                ASTVisualizer.saveDotFile(astRoot, "ast_graph.dot");
-                ASTVisualizer.printASTStatistics(astRoot);
+            if (raizAST != null) {
+                ASTVisualizer.printAST(raizAST);
+                ASTVisualizer.saveASTToFile(raizAST, "ast_output.txt");
+                ASTVisualizer.saveDotFile(raizAST, "ast_graph.dot");
+                ASTVisualizer.printASTStatistics(raizAST);
                 
-                System.out.println("AST generation completed successfully!");
+                System.out.println("Geração da AST concluída com sucesso!");
             } else {
-                System.out.println("Failed to generate AST");
+                System.out.println("Falha ao gerar AST");
             }
 
-            System.out.println("\n--- Running Semantic Analysis ---");
-            MyLanguageSemanticAnalyzer semanticAnalyzer = new MyLanguageSemanticAnalyzer();
-            ParseTreeWalker.DEFAULT.walk(semanticAnalyzer, tree);
+            System.out.println("\n--- Executando Análise Semântica ---");
+            MyLanguageSemanticAnalyzer analisadorSemantico = new MyLanguageSemanticAnalyzer();
+            ParseTreeWalker.DEFAULT.walk(analisadorSemantico, arvore);
 
-            if (semanticAnalyzer.hasErrors()) {
-                System.out.println("Semantic analysis completed with " + semanticAnalyzer.getErrors().size() + " error(s).");
-                for(String error : semanticAnalyzer.getErrors()){
-                    System.err.println(error);
+            if (analisadorSemantico.temErros()) {
+                System.out.println("Análise semântica concluída com " + analisadorSemantico.obterErros().size() + " erro(s).");
+                for(String erro : analisadorSemantico.obterErros()){
+                    System.err.println(erro);
                 }
             } else {
-                System.out.println("Semantic analysis completed successfully - No errors found.");
+                System.out.println("Análise semântica concluída com sucesso - Nenhum erro encontrado.");
 
-                System.out.println("\n--- Generating Intermediate Code ---");
-                IntermediateCodeGenerator codeGenerator = new IntermediateCodeGenerator();
-                codeGenerator.visit(tree);
-                System.out.println(codeGenerator.getIRCode());
-                codeGenerator.generateFile("output.ll");
+                System.out.println("\n--- Gerando Código Intermediário ---");
+                IntermediateCodeGenerator geradorCodigo = new IntermediateCodeGenerator();
+                geradorCodigo.visit(arvore);
+                System.out.println(geradorCodigo.getIRCode());
+                geradorCodigo.generateFile("output.ll");
             }
 
         } else {
-            System.out.println("Parsing failed with " + parser.getNumberOfSyntaxErrors() + " syntax error(s)");
+            System.out.println("Análise sintática falhou com " + analisadorSintatico.getNumberOfSyntaxErrors() + " erro(s) sintático(s)");
         }
     }
 }

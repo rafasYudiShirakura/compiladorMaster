@@ -7,62 +7,62 @@ import java.util.*;
 
 public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener {
 
-    private Map<String, String> symbolTable = new HashMap<>();
-    private List<String> errors = new ArrayList<>();
-    private String currentMethodReturnType = null;
-    private Set<String> allowedTypes = new HashSet<>(Arrays.asList(
+    private Map<String, String> tabelaSimbolos = new HashMap<>();
+    private List<String> erros = new ArrayList<>();
+    private String tipoRetornoMetodoAtual = null;
+    private Set<String> tiposPermitidos = new HashSet<>(Arrays.asList(
             "frequenciaMHz", "enderecoDeBlocoEmDisco", "tensaoVolts", "taxaTransferenciaGBpsPrecisa",
             "estadoEnergia", "codigoPostDisplay", "string",
             "int", "long", "float", "double", "boolean", "char", "void", 
             "inteiro", "real", "caractere", "texto"
     ));
     
-    private Set<String> predefinedFunctions = new HashSet<>(Arrays.asList(
+    private Set<String> funcoesPredefinidas = new HashSet<>(Arrays.asList(
             "mostrarDisplay", "lerEntradaSensor", "printf", "scanf", "print", "read"
     ));
-    private boolean methodHasReturn = false;
+    private boolean metodoTemRetorno = false;
 
-    private StringBuilder llvmCode = new StringBuilder();
+    private StringBuilder codigoLlvm = new StringBuilder();
 
-    private static final Set<String> SUPPORTED_TYPES = new HashSet<>(Arrays.asList(
+    private static final Set<String> TIPOS_SUPORTADOS = new HashSet<>(Arrays.asList(
             "int", "float", "double", "char", "string", "frequenciaMHz", "tensaoVolts", "taxaTransferenciaGBpsPrecisa", "codigoPostDisplay", "inteiro", "real", "caractere", "texto"
     ));
 
     @Override
     public void enterClassDeclaration(ObjectOrientedParser.ClassDeclarationContext ctx) {
-        String className = ctx.IDENTIFIER().getText();
-        System.out.println("Entering class: " + className);
-        symbolTable.put(className, "CLASS");
+        String nomeClasse = ctx.IDENTIFIER().getText();
+        System.out.println("Entrando na classe: " + nomeClasse);
+        tabelaSimbolos.put(nomeClasse, "CLASSE");
     }
 
     @Override
     public void exitClassDeclaration(ObjectOrientedParser.ClassDeclarationContext ctx) {
-        String className = ctx.IDENTIFIER().getText();
-        System.out.println("Exiting class: " + className);
+        String nomeClasse = ctx.IDENTIFIER().getText();
+        System.out.println("Saindo da classe: " + nomeClasse);
 
-        if (!errors.isEmpty()) {
-            System.out.println("\n=== SEMANTIC ERRORS FOUND ===");
-            for (String error : errors) {
-                System.err.println("ERROR: " + error);
+        if (!erros.isEmpty()) {
+            System.out.println("\n=== ERROS SEMÂNTICOS ENCONTRADOS ===");
+            for (String erro : erros) {
+                System.err.println("ERRO: " + erro);
             }
-            System.out.println("==============================");
+            System.out.println("====================================");
         } else {
-            System.out.println("✓ No semantic errors found in class " + className);
+            System.out.println("✓ Nenhum erro semântico encontrado na classe " + nomeClasse);
         }
     }
 
     @Override
     public void enterMethodDeclaration(ObjectOrientedParser.MethodDeclarationContext ctx) {
-        String methodName = ctx.IDENTIFIER().getText();
-        methodHasReturn = false;
+        String nomeMetodo = ctx.IDENTIFIER().getText();
+        metodoTemRetorno = false;
 
         if (ctx.typeOrVoid() != null) {
             if (ctx.typeOrVoid().VOID() != null) {
-                currentMethodReturnType = "void";
+                tipoRetornoMetodoAtual = "void";
             } else if (ctx.typeOrVoid().type() != null) {
-                currentMethodReturnType = ctx.typeOrVoid().type().getText();
-                if (!allowedTypes.contains(currentMethodReturnType)) {
-                    errors.add("Invalid return type for method '" + methodName + "': '" + currentMethodReturnType + "'.");
+                tipoRetornoMetodoAtual = ctx.typeOrVoid().type().getText();
+                if (!tiposPermitidos.contains(tipoRetornoMetodoAtual)) {
+                    erros.add("Tipo de retorno inválido para o método '" + nomeMetodo + "': '" + tipoRetornoMetodoAtual + "'.");
                 }
             }
         }
@@ -70,50 +70,50 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
         if (ctx.formalParameterList() != null) {
             if (ctx.formalParameterList().formalParameter() != null){
                 for (ObjectOrientedParser.FormalParameterContext paramCtx : ctx.formalParameterList().formalParameter()) {
-                    String paramType = paramCtx.type().getText();
-                    String paramName = paramCtx.variableDeclaratorId().IDENTIFIER().getText();
-                    symbolTable.put(paramName, paramType);
+                    String tipoParametro = paramCtx.type().getText();
+                    String nomeParametro = paramCtx.variableDeclaratorId().IDENTIFIER().getText();
+                    tabelaSimbolos.put(nomeParametro, tipoParametro);
                 }
             }
         }
-        System.out.println("  Entering method: " + methodName + " (returns: " + currentMethodReturnType + ")");
-        symbolTable.put(methodName, "METHOD:" + currentMethodReturnType);
+        System.out.println("  Entrando no método: " + nomeMetodo + " (retorna: " + tipoRetornoMetodoAtual + ")");
+        tabelaSimbolos.put(nomeMetodo, "METODO:" + tipoRetornoMetodoAtual);
     }
 
     @Override
     public void exitMethodDeclaration(ObjectOrientedParser.MethodDeclarationContext ctx) {
-        String methodName = ctx.IDENTIFIER().getText();
+        String nomeMetodo = ctx.IDENTIFIER().getText();
         if (ctx.formalParameterList() != null) {
             if (ctx.formalParameterList().formalParameter() != null){
                 for (ObjectOrientedParser.FormalParameterContext paramCtx : ctx.formalParameterList().formalParameter()) {
-                    String paramName = paramCtx.variableDeclaratorId().IDENTIFIER().getText();
-                    symbolTable.remove(paramName);
+                    String nomeParametro = paramCtx.variableDeclaratorId().IDENTIFIER().getText();
+                    tabelaSimbolos.remove(nomeParametro);
                 }
             }
         }
 
-        if (currentMethodReturnType != null && !currentMethodReturnType.equals("void") && !methodHasReturn) {
-            errors.add("Method '" + methodName + "' with return type '" + currentMethodReturnType + "' must have at least one return statement.");
+        if (tipoRetornoMetodoAtual != null && !tipoRetornoMetodoAtual.equals("void") && !metodoTemRetorno) {
+            erros.add("Método '" + nomeMetodo + "' com tipo de retorno '" + tipoRetornoMetodoAtual + "' deve ter pelo menos uma instrução de retorno.");
         }
-        System.out.println("  Exiting method: " + methodName);
-        currentMethodReturnType = null;
-        methodHasReturn = false;
+        System.out.println("  Saindo do método: " + nomeMetodo);
+        tipoRetornoMetodoAtual = null;
+        metodoTemRetorno = false;
     }
 
     @Override
     public void enterFieldDeclaration(ObjectOrientedParser.FieldDeclarationContext ctx) {
-        String type = ctx.type().getText();
-        if(!SUPPORTED_TYPES.contains(type) && !type.endsWith("[]")){
-            errors.add("Unsupported type: " + type);
+        String tipo = ctx.type().getText();
+        if(!TIPOS_SUPORTADOS.contains(tipo) && !tipo.endsWith("[]")){
+            erros.add("Tipo não suportado: " + tipo);
         }
         for (ObjectOrientedParser.VariableDeclaratorContext varCtx : ctx.variableDeclaratorList().variableDeclarator()) {
-            String varName = varCtx.IDENTIFIER().getText();
-            System.out.println("  Found field: " + type + " " + varName);
-            symbolTable.put(varName, type);
+            String nomeVariavel = varCtx.IDENTIFIER().getText();
+            System.out.println("  Campo encontrado: " + tipo + " " + nomeVariavel);
+            tabelaSimbolos.put(nomeVariavel, tipo);
             if (varCtx.variableInitializer() != null) {
-                String value = varCtx.variableInitializer().getText();
-                System.out.println("    - with initial value: " + value);
-                checkTypeCompatibility(type, varCtx.variableInitializer(), varName);
+                String valor = varCtx.variableInitializer().getText();
+                System.out.println("    - com valor inicial: " + valor);
+                verificarCompatibilidadeTipo(tipo, varCtx.variableInitializer(), nomeVariavel);
             }
         }
     }
@@ -121,19 +121,19 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
     @Override
     public void enterLocalVariableDeclarationStatement(ObjectOrientedParser.LocalVariableDeclarationStatementContext ctx) {
         if (ctx.type() != null) {
-            String type = ctx.type().getText();
-            if(!SUPPORTED_TYPES.contains(type) && !type.endsWith("[]")){
-                errors.add("Unsupported type: " + type);
+            String tipo = ctx.type().getText();
+            if(!TIPOS_SUPORTADOS.contains(tipo) && !tipo.endsWith("[]")){
+                erros.add("Tipo não suportado: " + tipo);
             }
             for (ObjectOrientedParser.VariableDeclaratorContext varCtx : ctx.variableDeclaratorList().variableDeclarator()) {
-                String varName = varCtx.IDENTIFIER().getText();
-                System.out.println("  Found local variable: " + type + " " + varName);
-                symbolTable.put(varName, type);
+                String nomeVariavel = varCtx.IDENTIFIER().getText();
+                System.out.println("  Variável local encontrada: " + tipo + " " + nomeVariavel);
+                tabelaSimbolos.put(nomeVariavel, tipo);
 
                 if (varCtx.variableInitializer() != null) {
-                    String value = varCtx.variableInitializer().getText();
-                    System.out.println("    - with initial value: " + value);
-                    checkTypeCompatibility(type, varCtx.variableInitializer(), varName);
+                    String valor = varCtx.variableInitializer().getText();
+                    System.out.println("    - com valor inicial: " + valor);
+                    verificarCompatibilidadeTipo(tipo, varCtx.variableInitializer(), nomeVariavel);
                 }
             }
         }
@@ -142,229 +142,253 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
     @Override
     public void enterStatement(ObjectOrientedParser.StatementContext ctx) {
         if (ctx.RETURN() != null) {
-            methodHasReturn = true;
+            metodoTemRetorno = true;
         }
         
         if (ctx.getText().contains("paraCadaPinoNoConector")) {
-            System.out.println("  Found FOR loop structure");
-            validateForLoop(ctx);
+            System.out.println("  Estrutura de loop FOR encontrada");
+            validarLoopFor(ctx);
         }
         
         if (ctx.getText().contains("enquantoConexaoAtiva")) {
-            System.out.println("  Found WHILE loop structure");
-            validateWhileLoop(ctx);
+            System.out.println("  Estrutura de loop WHILE encontrada");
+            validarLoopWhile(ctx);
         }
         
         if (ctx.getText().contains("mostrarDisplay") || ctx.getText().contains("lerEntradaSensor")) {
-            System.out.println("  Found I/O function call");
-            validateIOFunction(ctx);
+            System.out.println("  Chamada de função I/O encontrada");
+            validarFuncaoIO(ctx);
         }
         
         if (ctx.expressionStatement() != null && 
             ctx.expressionStatement().expression() != null) {
-            validateMethodCalls(ctx.expressionStatement().expression());
+            validarChamadasMetodo(ctx.expressionStatement().expression());
         }
     }
     
-    private void validateForLoop(ObjectOrientedParser.StatementContext ctx) {
-        System.out.println("    Validating FOR loop semantics");
+    private void validarLoopFor(ObjectOrientedParser.StatementContext ctx) {
+        System.out.println("    Validando semântica do loop FOR");
     }
     
-    private void validateWhileLoop(ObjectOrientedParser.StatementContext ctx) {
-        System.out.println("    Validating WHILE loop semantics");
+    private void validarLoopWhile(ObjectOrientedParser.StatementContext ctx) {
+        System.out.println("    Validando semântica do loop WHILE");
     }
     
-    private void validateIOFunction(ObjectOrientedParser.StatementContext ctx) {
-        System.out.println("    Validating I/O function call");
-        String statement = ctx.getText();
-        if (statement.contains("mostrarDisplay")) {
-            System.out.println("      Found output function: mostrarDisplay");
+    private void validarFuncaoIO(ObjectOrientedParser.StatementContext ctx) {
+        System.out.println("    Validando chamada de função I/O");
+        String instrucao = ctx.getText();
+        if (instrucao.contains("mostrarDisplay")) {
+            System.out.println("      Função de saída encontrada: mostrarDisplay");
         }
-        if (statement.contains("lerEntradaSensor")) {
-            System.out.println("      Found input function: lerEntradaSensor");
+        if (instrucao.contains("lerEntradaSensor")) {
+            System.out.println("      Função de entrada encontrada: lerEntradaSensor");
         }
     }
     
-    private void validateMethodCalls(ObjectOrientedParser.ExpressionContext expr) {
-        String exprText = expr.getText();
+    private void validarChamadasMetodo(ObjectOrientedParser.ExpressionContext expr) {
+        String textoExpressao = expr.getText();
         
-        for (String methodName : symbolTable.keySet()) {
-            if (symbolTable.get(methodName).startsWith("METHOD:") && 
-                exprText.contains(methodName + "(")) {
-                System.out.println("  Found method call: " + methodName);
-                validateMethodCall(methodName, expr);
+        for (String nomeMetodo : tabelaSimbolos.keySet()) {
+            if (tabelaSimbolos.get(nomeMetodo).startsWith("METODO:") && 
+                textoExpressao.contains(nomeMetodo + "(")) {
+                System.out.println("  Chamada de método encontrada: " + nomeMetodo);
+                validarChamadaMetodo(nomeMetodo, expr);
             }
         }
         
-        for (String predefinedFunc : predefinedFunctions) {
-            if (exprText.contains(predefinedFunc + "(")) {
-                System.out.println("  Found predefined function call: " + predefinedFunc);
+        for (String funcaoPredefinida : funcoesPredefinidas) {
+            if (textoExpressao.contains(funcaoPredefinida + "(")) {
+                System.out.println("  Chamada de função predefinida encontrada: " + funcaoPredefinida);
             }
         }
     }
     
-    private void validateMethodCall(String methodName, ObjectOrientedParser.ExpressionContext expr) {
-        String methodSignature = symbolTable.get(methodName);
-        if (methodSignature != null && methodSignature.startsWith("METHOD:")) {
-            String returnType = methodSignature.substring(7);
-            System.out.println("    Method '" + methodName + "' returns: " + returnType);
+    private void validarChamadaMetodo(String nomeMetodo, ObjectOrientedParser.ExpressionContext expr) {
+        String assinaturaMetodo = tabelaSimbolos.get(nomeMetodo);
+        if (assinaturaMetodo != null && assinaturaMetodo.startsWith("METODO:")) {
+            String tipoRetorno = assinaturaMetodo.substring(7);
+            System.out.println("    Método '" + nomeMetodo + "' retorna: " + tipoRetorno);
         }
     }
 
-    private void checkTypeCompatibility(String declaredType, ObjectOrientedParser.VariableInitializerContext initCtx, String varName) {
+    private void verificarCompatibilidadeTipo(String tipoDeclarado, ObjectOrientedParser.VariableInitializerContext initCtx, String nomeVariavel) {
         if (initCtx.expression() != null) {
-            String expressionType = getExpressionType(initCtx.expression());
-            if (!isTypeCompatible(declaredType, expressionType)) {
-                errors.add("Type mismatch for variable '" + varName + "': cannot convert from '" + 
-                          expressionType + "' to '" + declaredType + "'");
+            String tipoExpressao = obterTipoExpressao(initCtx.expression());
+            if (!tipoEhCompativel(tipoDeclarado, tipoExpressao)) {
+                erros.add("Incompatibilidade de tipos para a variável '" + nomeVariavel + "': não é possível converter de '" + 
+                          tipoExpressao + "' para '" + tipoDeclarado + "'");
             }
         } else if (initCtx.arrayInitializer() != null) {
-            if (!declaredType.endsWith("[]")) {
-                errors.add("Cannot assign array initializer to non-array variable '" + varName + "'");
+            if (!tipoDeclarado.endsWith("[]")) {
+                erros.add("Não é possível atribuir inicializador de array para variável não-array '" + nomeVariavel + "'");
             } else {
-                String elementType = declaredType.substring(0, declaredType.length() - 2);
-                checkArrayInitializerCompatibility(elementType, initCtx.arrayInitializer(), varName);
+                String tipoElemento = tipoDeclarado.substring(0, tipoDeclarado.length() - 2);
+                verificarCompatibilidadeInicializadorArray(tipoElemento, initCtx.arrayInitializer(), nomeVariavel);
             }
         }
     }
 
-    private String getExpressionType(ObjectOrientedParser.ExpressionContext exprCtx) {
+    private String obterTipoExpressao(ObjectOrientedParser.ExpressionContext exprCtx) {
         if (exprCtx.assignmentExpression() != null) {
-            return getAssignmentExpressionType(exprCtx.assignmentExpression());
+            return obterTipoExpressaoAtribuicao(exprCtx.assignmentExpression());
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getAssignmentExpressionType(ObjectOrientedParser.AssignmentExpressionContext ctx) {
+    private String obterTipoExpressaoAtribuicao(ObjectOrientedParser.AssignmentExpressionContext ctx) {
         if (ctx.conditionalExpression() != null && !ctx.conditionalExpression().isEmpty()) {
-            return getConditionalExpressionType(ctx.conditionalExpression(0));
+            return obterTipoExpressaoCondicional(ctx.conditionalExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getConditionalExpressionType(ObjectOrientedParser.ConditionalExpressionContext ctx) {
+    private String obterTipoExpressaoCondicional(ObjectOrientedParser.ConditionalExpressionContext ctx) {
         if (ctx.conditionalOrExpression() != null) {
-            return getConditionalOrExpressionType(ctx.conditionalOrExpression());
+            return obterTipoExpressaoOuCondicional(ctx.conditionalOrExpression());
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getConditionalOrExpressionType(ObjectOrientedParser.ConditionalOrExpressionContext ctx) {
+    private String obterTipoExpressaoOuCondicional(ObjectOrientedParser.ConditionalOrExpressionContext ctx) {
         if (ctx.conditionalAndExpression() != null && !ctx.conditionalAndExpression().isEmpty()) {
-            return getConditionalAndExpressionType(ctx.conditionalAndExpression(0));
+            return obterTipoExpressaoECondicional(ctx.conditionalAndExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getConditionalAndExpressionType(ObjectOrientedParser.ConditionalAndExpressionContext ctx) {
+    private String obterTipoExpressaoECondicional(ObjectOrientedParser.ConditionalAndExpressionContext ctx) {
         if (ctx.inclusiveOrExpression() != null && !ctx.inclusiveOrExpression().isEmpty()) {
-            return getInclusiveOrExpressionType(ctx.inclusiveOrExpression(0));
+            return obterTipoExpressaoOuInclusivo(ctx.inclusiveOrExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getInclusiveOrExpressionType(ObjectOrientedParser.InclusiveOrExpressionContext ctx) {
+    private String obterTipoExpressaoOuInclusivo(ObjectOrientedParser.InclusiveOrExpressionContext ctx) {
         if (ctx.exclusiveOrExpression() != null && !ctx.exclusiveOrExpression().isEmpty()) {
-            return getExclusiveOrExpressionType(ctx.exclusiveOrExpression(0));
+            return obterTipoExpressaoOuExclusivo(ctx.exclusiveOrExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getExclusiveOrExpressionType(ObjectOrientedParser.ExclusiveOrExpressionContext ctx) {
+    private String obterTipoExpressaoOuExclusivo(ObjectOrientedParser.ExclusiveOrExpressionContext ctx) {
         if (ctx.andExpression() != null && !ctx.andExpression().isEmpty()) {
-            return getAndExpressionType(ctx.andExpression(0));
+            return obterTipoExpressaoE(ctx.andExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getAndExpressionType(ObjectOrientedParser.AndExpressionContext ctx) {
+    private String obterTipoExpressaoE(ObjectOrientedParser.AndExpressionContext ctx) {
         if (ctx.equalityExpression() != null && !ctx.equalityExpression().isEmpty()) {
-            return getEqualityExpressionType(ctx.equalityExpression(0));
+            return obterTipoExpressaoIgualdade(ctx.equalityExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getEqualityExpressionType(ObjectOrientedParser.EqualityExpressionContext ctx) {
+    private String obterTipoExpressaoIgualdade(ObjectOrientedParser.EqualityExpressionContext ctx) {
         if (ctx.relationalExpression() != null && !ctx.relationalExpression().isEmpty()) {
-            return getRelationalExpressionType(ctx.relationalExpression(0));
+            return obterTipoExpressaoRelacional(ctx.relationalExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getRelationalExpressionType(ObjectOrientedParser.RelationalExpressionContext ctx) {
+    private String obterTipoExpressaoRelacional(ObjectOrientedParser.RelationalExpressionContext ctx) {
         if (ctx.shiftExpression() != null && !ctx.shiftExpression().isEmpty()) {
-            return getShiftExpressionType(ctx.shiftExpression(0));
+            return obterTipoExpressaoDeslocamento(ctx.shiftExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getShiftExpressionType(ObjectOrientedParser.ShiftExpressionContext ctx) {
+    private String obterTipoExpressaoDeslocamento(ObjectOrientedParser.ShiftExpressionContext ctx) {
         if (ctx.additiveExpression() != null && !ctx.additiveExpression().isEmpty()) {
-            return getAdditiveExpressionType(ctx.additiveExpression(0));
+            return obterTipoExpressaoAditiva(ctx.additiveExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getAdditiveExpressionType(ObjectOrientedParser.AdditiveExpressionContext ctx) {
+    private String obterTipoExpressaoAditiva(ObjectOrientedParser.AdditiveExpressionContext ctx) {
         if (ctx.multiplicativeExpression() != null && !ctx.multiplicativeExpression().isEmpty()) {
-            return getMultiplicativeExpressionType(ctx.multiplicativeExpression(0));
+            return obterTipoExpressaoMultiplicativa(ctx.multiplicativeExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getMultiplicativeExpressionType(ObjectOrientedParser.MultiplicativeExpressionContext ctx) {
+    private String obterTipoExpressaoMultiplicativa(ObjectOrientedParser.MultiplicativeExpressionContext ctx) {
         if (ctx.unaryExpression() != null && !ctx.unaryExpression().isEmpty()) {
-            return getUnaryExpressionType(ctx.unaryExpression(0));
+            return obterTipoExpressaoUnaria(ctx.unaryExpression(0));
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getUnaryExpressionType(ObjectOrientedParser.UnaryExpressionContext ctx) {
+    private String obterTipoExpressaoUnaria(ObjectOrientedParser.UnaryExpressionContext ctx) {
         if (ctx.unaryExpressionNotPlusMinus() != null) {
-            return getUnaryExpressionNotPlusMinusType(ctx.unaryExpressionNotPlusMinus());
+            return obterTipoExpressaoUnariaSemMaisMenos(ctx.unaryExpressionNotPlusMinus());
         } else if (ctx.preIncrementExpression() != null) {
-            return getUnaryExpressionType(ctx.preIncrementExpression().unaryExpression());
+            return obterTipoExpressaoUnaria(ctx.preIncrementExpression().unaryExpression());
         } else if (ctx.preDecrementExpression() != null) {
-            return getUnaryExpressionType(ctx.preDecrementExpression().unaryExpression());
+            return obterTipoExpressaoUnaria(ctx.preDecrementExpression().unaryExpression());
         } else if (ctx.unaryExpression() != null) {
-            return getUnaryExpressionType(ctx.unaryExpression());
+            return obterTipoExpressaoUnaria(ctx.unaryExpression());
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getUnaryExpressionNotPlusMinusType(ObjectOrientedParser.UnaryExpressionNotPlusMinusContext ctx) {
+    private String obterTipoExpressaoUnariaSemMaisMenos(ObjectOrientedParser.UnaryExpressionNotPlusMinusContext ctx) {
         if (ctx.postfixExpression() != null) {
-            return getPostfixExpressionType(ctx.postfixExpression());
+            return obterTipoExpressaoPosfixo(ctx.postfixExpression());
         } else if (ctx.castExpression() != null) {
-            return "unknown";
+            return "desconhecido";
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getPostfixExpressionType(ObjectOrientedParser.PostfixExpressionContext ctx) {
+    private String obterTipoExpressaoPosfixo(ObjectOrientedParser.PostfixExpressionContext ctx) {
         if (ctx.primary() != null) {
-            return getPrimaryExpressionType(ctx.primary());
+            return obterTipoExpressaoPrimaria(ctx.primary());
         }
-        return "unknown";
+        
+        // Handle method calls like verificaMaior(a, b)
+        String textoExpressao = ctx.getText();
+        for (String nomeMetodo : tabelaSimbolos.keySet()) {
+            if (tabelaSimbolos.get(nomeMetodo).startsWith("METODO:") && 
+                textoExpressao.contains(nomeMetodo + "(")) {
+                String assinaturaMetodo = tabelaSimbolos.get(nomeMetodo);
+                return assinaturaMetodo.substring(7); // Remove "METHOD:" prefix
+            }
+        }
+        
+        // Handle I/O functions
+        if (textoExpressao.contains("lerEntradaSensor(")) {
+            return "frequenciaMHz"; // lerEntradaSensor returns an integer type
+        }
+        
+        return "desconhecido";
     }
 
-    private String getPrimaryExpressionType(ObjectOrientedParser.PrimaryContext primaryCtx) {
-        if (primaryCtx == null) return "unknown";
+    private String obterTipoExpressaoPrimaria(ObjectOrientedParser.PrimaryContext primaryCtx) {
+        if (primaryCtx == null) return "desconhecido";
         
         if (primaryCtx.literal() != null) {
-            return getLiteralType(primaryCtx.literal());
+            return obterTipoLiteral(primaryCtx.literal());
         } else if (primaryCtx.IDENTIFIER() != null) {
-            String varName = primaryCtx.IDENTIFIER().getText();
-            return symbolTable.getOrDefault(varName, "unknown");
+            String nomeVariavel = primaryCtx.IDENTIFIER().getText();
+            return tabelaSimbolos.getOrDefault(nomeVariavel, "desconhecido");
         } else if (primaryCtx.THIS() != null) {
             return "this";
         } else if (primaryCtx.getText().equals("null")) {
             return "null";
+        } else if (primaryCtx.ioExpression() != null) {
+            // Handle I/O expressions
+            String ioText = primaryCtx.ioExpression().getText();
+            if (ioText.contains("lerEntradaSensor(")) {
+                return "frequenciaMHz"; // lerEntradaSensor returns an integer type
+            } else if (ioText.contains("mostrarDisplay(")) {
+                return "sinalDeAck"; // mostrarDisplay returns void (sinalDeAck)
+            }
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private String getLiteralType(ObjectOrientedParser.LiteralContext literalCtx) {
+    private String obterTipoLiteral(ObjectOrientedParser.LiteralContext literalCtx) {
         if (literalCtx.INTEGER_LITERAL() != null) {
             return "frequenciaMHz";
         } else if (literalCtx.FLOAT_LITERAL() != null) {
@@ -376,70 +400,70 @@ public class MyLanguageSemanticAnalyzer extends ObjectOrientedParserBaseListener
         } else if (literalCtx.BOOLEAN_LITERAL() != null) {
             return "estadoEnergia";
         }
-        return "unknown";
+        return "desconhecido";
     }
 
-    private boolean isTypeCompatible(String declaredType, String expressionType) {
-        if (declaredType.equals(expressionType)) {
+    private boolean tipoEhCompativel(String tipoDeclarado, String tipoExpressao) {
+        if (tipoDeclarado.equals(tipoExpressao)) {
             return true;
         }
         
-        if ("null".equals(expressionType) && !isPrimitiveType(declaredType)) {
+        if ("null".equals(tipoExpressao) && !ehTipoPrimitivo(tipoDeclarado)) {
             return true;
         }
         
-        if (isNumericType(declaredType) && isNumericType(expressionType)) {
-            return isValidNumericConversion(expressionType, declaredType);
+        if (ehTipoNumerico(tipoDeclarado) && ehTipoNumerico(tipoExpressao)) {
+            return ehConversaoNumericaValida(tipoExpressao, tipoDeclarado);
         }
         
         return false;
     }
 
-    private boolean isPrimitiveType(String type) {
+    private boolean ehTipoPrimitivo(String tipo) {
         return Arrays.asList("frequenciaMHz", "enderecoDeBlocoEmDisco", "tensaoVolts", 
                             "taxaTransferenciaGBpsPrecisa", "estadoEnergia", "codigoPostDisplay",
                             "int", "long", "float", "double", "boolean", "char",
-                            "inteiro", "real", "caractere").contains(type);
+                            "inteiro", "real", "caractere").contains(tipo);
     }
 
-    private boolean isNumericType(String type) {
+    private boolean ehTipoNumerico(String tipo) {
         return Arrays.asList("frequenciaMHz", "enderecoDeBlocoEmDisco", "tensaoVolts", 
                             "taxaTransferenciaGBpsPrecisa", "int", "long", "float", "double",
-                            "inteiro", "real").contains(type);
+                            "inteiro", "real").contains(tipo);
     }
 
-    private boolean isValidNumericConversion(String fromType, String toType) {
-        if (fromType.equals("frequenciaMHz") || fromType.equals("int") || fromType.equals("inteiro")) {
+    private boolean ehConversaoNumericaValida(String tipoDe, String tipoPara) {
+        if (tipoDe.equals("frequenciaMHz") || tipoDe.equals("int") || tipoDe.equals("inteiro")) {
             return Arrays.asList("frequenciaMHz", "enderecoDeBlocoEmDisco", "tensaoVolts", 
                                 "taxaTransferenciaGBpsPrecisa", "int", "long", "float", "double",
-                                "inteiro", "real").contains(toType);
+                                "inteiro", "real").contains(tipoPara);
         }
-        if (fromType.equals("enderecoDeBlocoEmDisco") || fromType.equals("long")) {
+        if (tipoDe.equals("enderecoDeBlocoEmDisco") || tipoDe.equals("long")) {
             return Arrays.asList("enderecoDeBlocoEmDisco", "tensaoVolts", "taxaTransferenciaGBpsPrecisa",
-                                "long", "float", "double", "real").contains(toType);
+                                "long", "float", "double", "real").contains(tipoPara);
         }
-        if (fromType.equals("tensaoVolts") || fromType.equals("float") || fromType.equals("real")) {
-            return Arrays.asList("tensaoVolts", "taxaTransferenciaGBpsPrecisa", "float", "double", "real").contains(toType);
+        if (tipoDe.equals("tensaoVolts") || tipoDe.equals("float") || tipoDe.equals("real")) {
+            return Arrays.asList("tensaoVolts", "taxaTransferenciaGBpsPrecisa", "float", "double", "real").contains(tipoPara);
         }
-        if (fromType.equals("taxaTransferenciaGBpsPrecisa") || fromType.equals("double")) {
-            return Arrays.asList("taxaTransferenciaGBpsPrecisa", "double").contains(toType);
+        if (tipoDe.equals("taxaTransferenciaGBpsPrecisa") || tipoDe.equals("double")) {
+            return Arrays.asList("taxaTransferenciaGBpsPrecisa", "double").contains(tipoPara);
         }
         return false;
     }
 
-    private void checkArrayInitializerCompatibility(String elementType, ObjectOrientedParser.ArrayInitializerContext arrayCtx, String varName) {
+    private void verificarCompatibilidadeInicializadorArray(String tipoElemento, ObjectOrientedParser.ArrayInitializerContext arrayCtx, String nomeVariavel) {
         if (arrayCtx.variableInitializer() != null) {
             for (ObjectOrientedParser.VariableInitializerContext initCtx : arrayCtx.variableInitializer()) {
-                checkTypeCompatibility(elementType, initCtx, varName + "[]");
+                verificarCompatibilidadeTipo(tipoElemento, initCtx, nomeVariavel + "[]");
             }
         }
     }
 
-    public List<String> getErrors() {
-        return new ArrayList<>(errors);
+    public List<String> obterErros() {
+        return new ArrayList<>(erros);
     }
 
-    public boolean hasErrors() {
-        return !errors.isEmpty();
+    public boolean temErros() {
+        return !erros.isEmpty();
     }
 }

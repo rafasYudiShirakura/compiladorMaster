@@ -30,22 +30,25 @@ enumDeclaration
     : modifier* ENUM IDENTIFIER (IMPLEMENTS typeList)? enumBody;
 
 
+// --- Modifiers ---
 modifier
     : PUBLIC | PRIVATE | PROTECTED | STATIC | FINAL | ABSTRACT | NATIVE | SYNCHRONIZED | TRANSIENT | VOLATILE;
 
+// --- Type Parameters (Generics) ---
 typeParameters
     : LT typeParameter (COMMA typeParameter)* GT;
 
 typeParameter
     : IDENTIFIER (EXTENDS type)?;
 
+// --- Type Lists and Types ---
 typeList
     : type (COMMA type)*;
 
 type
     : primitiveType
     | classOrInterfaceType
-    | type LBRACK RBRACK
+    | type LBRACK RBRACK // Array type
     ;
 
 primitiveType
@@ -59,26 +62,28 @@ typeArguments
 
 typeArgument
     : type
-    | QUESTION ((EXTENDS | SUPER) type)?
+    | QUESTION ((EXTENDS | SUPER) type)? // Wildcard
     ;
 
+// --- Class Body ---
 classBody
     : LBRACE classBodyDeclaration* RBRACE;
 
 classBodyDeclaration
-    : SEMI
-    | STATIC? block
+    : SEMI // Empty declaration
+    | STATIC? block // Static initializer or instance initializer
     | memberDeclaration;
 
 memberDeclaration
     : fieldDeclaration
     | methodDeclaration
     | constructorDeclaration
-    | interfaceDeclaration
-    | classDeclaration
-    | enumDeclaration
+    | interfaceDeclaration // Nested interface
+    | classDeclaration     // Nested class
+    | enumDeclaration      // Nested enum
     ;
 
+// --- Interface Body ---
 interfaceBody
     : LBRACE interfaceBodyDeclaration* RBRACE;
 
@@ -90,18 +95,19 @@ interfaceBodyDeclaration
 interfaceMemberDeclaration
     : constantDeclaration
     | interfaceMethodDeclaration
-    | interfaceDeclaration
-    | classDeclaration
-    | enumDeclaration
+    | interfaceDeclaration // Nested interface
+    | classDeclaration     // Nested class
+    | enumDeclaration      // Nested enum
     ;
 
-constantDeclaration
+constantDeclaration // Fields in interfaces are implicitly public, static, final
     : type variableDeclaratorList SEMI;
 
 interfaceMethodDeclaration
     : modifier* typeOrVoid IDENTIFIER LPAREN formalParameterList? RPAREN (LBRACK RBRACK)* (THROWS qualifiedNameList)? (DEFAULT block | SEMI) ;
 
 
+// --- Enum Body ---
 enumBody
     : LBRACE enumConstantList? (COMMA? enumBodyDeclarations)? RBRACE;
 
@@ -115,6 +121,7 @@ enumBodyDeclarations
     : SEMI classBodyDeclaration*;
 
 
+// --- Field, Method, Constructor Declarations ---
 fieldDeclaration
     : modifier* type variableDeclaratorList SEMI;
 
@@ -149,7 +156,7 @@ formalParameterList
 formalParameter
     : modifier* type variableDeclaratorId;
 
-lastFormalParameter
+lastFormalParameter // For varargs
     : modifier* type ELLIPSIS variableDeclaratorId;
 
 variableDeclaratorId
@@ -158,17 +165,18 @@ variableDeclaratorId
 qualifiedNameList
     : qualifiedName (COMMA qualifiedName)*;
 
+// --- Block and Statements ---
 block
     : LBRACE blockStatement* RBRACE;
 
 blockStatement
     : localVariableDeclarationStatement
     | statement
-    | typeDeclaration
+    | typeDeclaration // Local class/interface/enum
     ;
 
 localVariableDeclarationStatement
-    : (FINAL? type | VAR) variableDeclaratorList SEMI;
+    : (FINAL? type | VAR) variableDeclaratorList SEMI; // Added VAR for type inference
 
 statement
     : block
@@ -184,25 +192,36 @@ statement
     | THROW expression SEMI
     | BREAK IDENTIFIER? SEMI
     | CONTINUE IDENTIFIER? SEMI
-    | SEMI
-    | ioStatement
-    | expressionStatement
-    | IDENTIFIER COLON statement
+    | SEMI // Empty statement
+    | ioStatement // I/O function calls
+    | expressionStatement // Must be an expression that can stand alone
+    | IDENTIFIER COLON statement // Labeled statement
     ;
 
 ioStatement
-    : PRINTF LPAREN expression RPAREN SEMI
-    | SCANF LPAREN RPAREN
+    : PRINTF LPAREN expression RPAREN SEMI   // mostrarDisplay(expr);
+    | SCANF LPAREN RPAREN                    // lerEntradaSensor()
     ;
 
 expressionStatement
     : expression SEMI;
 
+//statementExpression // Expressions that can be statements
+//    : assignment // <<<< THIS IS THE LIKELY CULPRIT
+//    | preIncrementExpression
+//    | preDecrementExpression
+//    | postIncrementExpression
+//    | postDecrementExpression
+//    | methodCall
+//    | newExpression
+//    ;
+
+
 catchClause
     : CATCH LPAREN modifier* catchType IDENTIFIER RPAREN block;
 
 catchType
-    : qualifiedName (BITOR qualifiedName)*;
+    : qualifiedName (BITOR qualifiedName)*; // For multi-catch
 
 finallyBlock
     : FINALLY block;
@@ -217,7 +236,7 @@ forInit
     | expressionList
     ;
 
-enhancedForControl
+enhancedForControl // For-each loop
     : (FINAL? type | VAR) variableDeclaratorId COLON expression;
 
 forUpdate
@@ -228,15 +247,36 @@ switchBlockStatementGroup
 
 switchLabel
     : CASE constantExpression COLON
-    | CASE enumConstantName COLON
+    | CASE enumConstantName COLON // Allow enum constants in case
     | DEFAULT COLON
     ;
 
-constantExpression
+constantExpression // Simplified for this example
     : expression;
 
 enumConstantName
     : IDENTIFIER;
+
+
+// --- Expressions (Order of precedence) ---
+// Precedence:
+// 1. Primary, new, method calls, field access, array access
+// 2. Postfix ++, --
+// 3. Prefix ++, --, +, -, ~, !
+// 4. Cast, new (for arrays specifically could be here too)
+// 5. Multiplicative *, /, %
+// 6. Additive +, -
+// 7. Shift <<, >>, >>>
+// 8. Relational <, >, <=, >=, instanceof
+// 9. Equality ==, !=
+// 10. Bitwise AND &
+// 11. Bitwise XOR ^
+// 12. Bitwise OR |
+// 13. Logical AND &&
+// 14. Logical OR ||
+// 15. Ternary ? :
+// 16. Lambda ->
+// 17. Assignment =, +=, -=, etc.
 
 primary
     : LPAREN expression RPAREN
@@ -244,16 +284,16 @@ primary
     | SUPER
     | literal
     | IDENTIFIER
-    | IDENTIFIER typeArguments
-    | typeOrVoid DOT CLASS
-    | VOID DOT CLASS
+    | IDENTIFIER typeArguments // Generic method call on implicit this
+    | typeOrVoid DOT CLASS // e.g., String.class, int.class
+    | VOID DOT CLASS // void.class
     | newExpression
-    | ioExpression
+    | ioExpression // I/O function calls that return values
     ;
 
 ioExpression
-    : SCANF LPAREN RPAREN
-    | PRINTF LPAREN expression RPAREN
+    : SCANF LPAREN RPAREN                   // lerEntradaSensor() - returns a value
+    | PRINTF LPAREN expression RPAREN       // mostrarDisplay(expr) - can be used in expressions too
     ;
 
 literal
@@ -266,9 +306,9 @@ literal
     ;
 
 newExpression
-    : NEW classOrInterfaceType (typeArguments)? arguments (classBody)?
-    | NEW primitiveType LBRACK expression RBRACK (LBRACK RBRACK)*
-    | NEW classOrInterfaceType LBRACK expression RBRACK (LBRACK RBRACK)* (arrayInitializer)?
+    : NEW classOrInterfaceType (typeArguments)? arguments (classBody)? // new MyClass<>() / new MyClass() / new MyClass() { ... }
+    | NEW primitiveType LBRACK expression RBRACK (LBRACK RBRACK)* // new int[size]
+    | NEW classOrInterfaceType LBRACK expression RBRACK (LBRACK RBRACK)* (arrayInitializer)? // new String[size][]
     ;
 
 arguments
@@ -277,6 +317,7 @@ arguments
 expressionList
     : expression (COMMA expression)*;
 
+// Start with assignment as the lowest precedence for the 'expression' rule
 expression
     : lambdaExpression
     | assignmentExpression
@@ -288,7 +329,7 @@ lambdaExpression
 lambdaParameters
     : IDENTIFIER
     | LPAREN formalParameterList? RPAREN
-    | LPAREN IDENTIFIER (COMMA IDENTIFIER)* RPAREN
+    | LPAREN IDENTIFIER (COMMA IDENTIFIER)* RPAREN // Inferred types
     ;
 
 lambdaBody
@@ -297,7 +338,7 @@ lambdaBody
     ;
 
 assignmentExpression
-    : conditionalExpression (assignmentOperator conditionalExpression)*;
+    : conditionalExpression (assignmentOperator conditionalExpression)*; // Right-associative
 
 assignmentOperator
     : ASSIGN
@@ -315,7 +356,7 @@ assignmentOperator
     ;
 
 conditionalExpression
-    : conditionalOrExpression (QUESTION expression COLON conditionalExpression)? ;
+    : conditionalOrExpression (QUESTION expression COLON conditionalExpression)? ; // Ternary
 
 conditionalOrExpression
     : conditionalAndExpression (OR conditionalAndExpression)*;
@@ -339,7 +380,7 @@ relationalExpression
     : shiftExpression ((LT | GT | LE | GE) shiftExpression | INSTANCEOF type)*;
 
 shiftExpression
-    : additiveExpression ((LSHIFT | RSHIFT | URSHIFT) additiveExpression)*;
+    : additiveExpression ((LSHIFT | RSHIFT | URSHIFT) additiveExpression)*; // LSHIFT, RSHIFT, URSHIFT are placeholders for <<, >>, >>> if not defined in lexer
 
 additiveExpression
     : multiplicativeExpression ((ADD | SUB) multiplicativeExpression)*;
@@ -350,8 +391,8 @@ multiplicativeExpression
 unaryExpression
     : preIncrementExpression
     | preDecrementExpression
-    | ADD unaryExpression
-    | SUB unaryExpression
+    | ADD unaryExpression // Unary plus
+    | SUB unaryExpression // Unary minus
     | unaryExpressionNotPlusMinus
     ;
 
@@ -359,22 +400,22 @@ preIncrementExpression: INC unaryExpression;
 preDecrementExpression: DEC unaryExpression;
 
 unaryExpressionNotPlusMinus
-    : TILDE unaryExpression
-    | BANG unaryExpression
+    : TILDE unaryExpression // Bitwise complement
+    | BANG unaryExpression  // Logical NOT
     | castExpression
     | postfixExpression
     ;
 
-postfixExpression
-    :   (primary | IDENTIFIER typeArguments)
-        ( DOT (IDENTIFIER arguments? | THIS | SUPER arguments | NEW typeArguments? classOrInterfaceType arguments (classBody)?)
-        | LBRACK expression RBRACK
-        | INC
-        | DEC
+postfixExpression // Handles postfix inc/dec, method calls, field access, array indexing
+    :   (primary | IDENTIFIER (typeArguments)? | IDENTIFIER arguments) // Added method calls
+        ( DOT (IDENTIFIER arguments? | THIS | SUPER arguments | NEW typeArguments? classOrInterfaceType arguments (classBody)?) // field access, method call, inner class creation
+        | LBRACK expression RBRACK // array access
+        | INC // Postfix increment
+        | DEC // Postfix decrement
         )*
     ;
 
-methodCall
+methodCall // Explicit rule for clarity, though covered by postfixExpression
     : (IDENTIFIER | primary) arguments (DOT methodCallTail)*
     ;
 
@@ -385,8 +426,13 @@ methodCallTail
 
 castExpression
     : LPAREN primitiveType RPAREN unaryExpression
-    | LPAREN classOrInterfaceType (BITAND classOrInterfaceType)* RPAREN unaryExpressionNotPlusMinus
+    | LPAREN classOrInterfaceType (BITAND classOrInterfaceType)* RPAREN unaryExpressionNotPlusMinus // Intersection types for cast
     ;
 
-parExpression
+parExpression // Used for if, while, etc.
     : LPAREN expression RPAREN;
+
+//VAR: 'var'; // If you want to support 'var' for local variable type inference
+//LSHIFT: '<<'; // Placeholder if not in lexer
+//RSHIFT: '>>'; // Placeholder if not in lexer
+//URSHIFT: '>>>';// Placeholder if not in lexer

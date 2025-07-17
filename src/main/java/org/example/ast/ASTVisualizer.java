@@ -6,21 +6,21 @@ import java.io.IOException;
 public class ASTVisualizer {
     
     public static void printAST(ASTNode root) {
-        System.out.println("\n=== ABSTRACT SYNTAX TREE (AST) ===");
-        System.out.println("AST Root: " + root.toString());
+        System.out.println("\n=== Árvore de sintaxe abstrata (AST) ===");
+        System.out.println("AST Raiz: " + root.toString());
         System.out.println(root.toTreeString(0));
         System.out.println("===================================");
     }
     
     public static void saveASTToFile(ASTNode root, String filename) {
         try (FileWriter writer = new FileWriter(filename)) {
-            writer.write("=== ABSTRACT SYNTAX TREE (AST) ===\n");
-            writer.write("AST Root: " + root.toString() + "\n");
+            writer.write("=== Árvore de sintaxe abstrata (AST) ===\n");
+            writer.write("AST Raiz: " + root.toString() + "\n");
             writer.write(root.toTreeString(0));
             writer.write("===================================\n");
-            System.out.println("AST saved to: " + filename);
+            System.out.println("AST salva em: " + filename);
         } catch (IOException e) {
-            System.err.println("Error saving AST to file: " + e.getMessage());
+            System.err.println("Erro ao salvar AST no arquivo: " + e.getMessage());
         }
     }
     
@@ -40,7 +40,6 @@ public class ASTVisualizer {
         int currentId = nodeId;
         String nodeLabel = node.toString().replace("\"", "\\\"");
         
-        // Set different colors for different node types
         String fillColor = getNodeColor(node.getNodeType());
         dot.append("  node").append(currentId)
            .append(" [label=\"").append(nodeLabel).append("\", fillcolor=").append(fillColor).append("];\n");
@@ -71,13 +70,12 @@ public class ASTVisualizer {
     public static void saveDotFile(ASTNode root, String filename) {
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write(generateDotFormat(root));
-            System.out.println("AST DOT file saved to: " + filename);
+            System.out.println("AST DOT arquivo salvo: " + filename);
             
-            // Automatically generate PNG image
             generateASTImage(filename);
             
         } catch (IOException e) {
-            System.err.println("Error saving DOT file: " + e.getMessage());
+            System.err.println("Erro ao salvar DOT file: " + e.getMessage());
         }
     }
     
@@ -85,7 +83,6 @@ public class ASTVisualizer {
         try {
             String pngFilename = dotFilename.replace(".dot", ".png");
             
-            // Try to execute dot command to generate PNG
             ProcessBuilder pb = new ProcessBuilder("dot", "-Tpng", dotFilename, "-o", pngFilename);
             pb.redirectErrorStream(true);
             
@@ -93,24 +90,21 @@ public class ASTVisualizer {
             int exitCode = process.waitFor();
             
             if (exitCode == 0) {
-                System.out.println("AST image generated successfully: " + pngFilename);
+                System.out.println("Imagem da AST gerada com sucesso: " + pngFilename);
             } else {
-                // If dot command fails, try alternative methods
                 tryAlternativeImageGeneration(dotFilename, pngFilename);
             }
             
         } catch (Exception e) {
-            System.out.println("Could not auto-generate AST image. Graphviz 'dot' command not found.");
-            System.out.println("   Install Graphviz and add to PATH, or manually run:");
+            System.out.println("Imagem AST não gerada. Graphviz 'dot' comando não encontrado.");
+            System.out.println("   Instale Graphviz e adicione ao PATH, ou faça manualmente:");
             System.out.println("   dot -Tpng " + dotFilename + " -o ast.png");
             
-            // Try to generate a simple text-based visualization as fallback
             generateTextBasedVisualization(dotFilename);
         }
     }
     
     private static void tryAlternativeImageGeneration(String dotFilename, String pngFilename) {
-        // Try common Graphviz installation paths on Windows
         String[] possiblePaths = {
             "C:\\Program Files\\Graphviz\\bin\\dot.exe",
             "C:\\Program Files (x86)\\Graphviz\\bin\\dot.exe",
@@ -131,14 +125,14 @@ public class ASTVisualizer {
                     return;
                 }
             } catch (Exception e) {
-                // Continue trying other paths
+                // Sem tratamento
             }
         }
         
-        System.out.println("Could not auto-generate AST image. Please install Graphviz:");
-        System.out.println("   1. Download from: https://graphviz.org/download/");
-        System.out.println("   2. Add to system PATH");
-        System.out.println("   3. Or manually run: dot -Tpng " + dotFilename + " -o " + pngFilename);
+        System.out.println("Imagem AST não gerada. Instale o Graphviz:");
+        System.out.println("   1. Site para instalação: https://graphviz.org/download/");
+        System.out.println("   2. Adicione ao PATH do sistema");
+        System.out.println("   3. Ou execute manualmente: dot -Tpng " + dotFilename + " -o " + pngFilename);
         
         generateTextBasedVisualization(dotFilename);
     }
@@ -148,19 +142,17 @@ public class ASTVisualizer {
             String textVizFilename = dotFilename.replace(".dot", "_visualization.txt");
             
             try (FileWriter writer = new FileWriter(textVizFilename)) {
-                writer.write("=== AST VISUAL REPRESENTATION ===\n");
-                writer.write("This is a text-based representation of your AST.\n");
-                writer.write("For a graphical image, install Graphviz from: https://graphviz.org/download/\n\n");
+                writer.write("=== VISUALIZAÇÃO DA AST ===\n");
+                writer.write("ISSO É UMA REPRESENTAÇÃO TEXTUAL DA AST.\n");
+                writer.write("PARA UMA VISUALIZAÇÃO GRÁFICA, INSTALE O GRAPHVIZ: https://graphviz.org/download/\n\n");
                 
-                // Read the DOT file and create a simplified text visualization
                 java.nio.file.Path dotPath = java.nio.file.Paths.get(dotFilename);
                 if (java.nio.file.Files.exists(dotPath)) {
                     java.util.List<String> lines = java.nio.file.Files.readAllLines(dotPath);
                     
-                    writer.write("AST Structure (from DOT file):\n");
+                    writer.write("AST Estrutura (Arquivo DOT):\n");
                     for (String line : lines) {
                         if (line.contains("label=")) {
-                            // Extract and format node information
                             String cleaned = line.trim()
                                                .replaceAll("node\\d+", "")
                                                .replaceAll("\\[label=\"", "• ")
@@ -174,10 +166,10 @@ public class ASTVisualizer {
                 }
             }
             
-            System.out.println("Text-based AST visualization saved to: " + textVizFilename);
+            System.out.println("Visualização textual da AST salva em: " + textVizFilename);
             
         } catch (Exception e) {
-            System.err.println("Could not generate text-based visualization: " + e.getMessage());
+            System.err.println("Não foi possivel gerar a visualização textual da AST: " + e.getMessage());
         }
     }
     
@@ -185,16 +177,16 @@ public class ASTVisualizer {
         ASTStatistics stats = new ASTStatistics();
         collectStatistics(root, stats);
         
-        System.out.println("\n=== AST STATISTICS ===");
-        System.out.println("Total nodes: " + stats.totalNodes);
+        System.out.println("\n=== AST Estatisticas ===");
+        System.out.println("Quantidade de nós: " + stats.totalNodes);
         System.out.println("Classes: " + stats.classes);
-        System.out.println("Methods: " + stats.methods);
-        System.out.println("Fields: " + stats.fields);
-        System.out.println("Parameters: " + stats.parameters);
-        System.out.println("Statements: " + stats.statements);
-        System.out.println("Expressions: " + stats.expressions);
-        System.out.println("Literals: " + stats.literals);
-        System.out.println("Max depth: " + getMaxDepth(root, 0));
+        System.out.println("Métodos: " + stats.methods);
+        System.out.println("Campos: " + stats.fields);
+        System.out.println("Parametros: " + stats.parameters);
+        System.out.println("Declarações: " + stats.statements);
+        System.out.println("Expressões: " + stats.expressions);
+        System.out.println("Literais: " + stats.literals);
+        System.out.println("Profundidade Máxima: " + getMaxDepth(root, 0));
         System.out.println("======================");
     }
     

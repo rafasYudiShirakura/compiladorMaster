@@ -12,21 +12,21 @@ import java.util.Map;
 
 public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<Void> {
 
-    private final StringBuilder llvmIr = new StringBuilder();
-    private int labelCounter = 0;
-    private int tempVarCounter = 0;
-    private final Map<String, String> symbolTable = new HashMap<>();
+    private final StringBuilder codigoLlvm = new StringBuilder();
+    private int contadorRotulos = 0;
+    private int contadorVariavelTemporaria = 0;
+    private final Map<String, String> tabelaSimbolos = new HashMap<>();
 
-    private String newLabel() {
-        return "L" + (labelCounter++);
+    private String novoRotulo() {
+        return "L" + (contadorRotulos++);
     }
 
-    private String newTemp() {
-        return "%t" + (tempVarCounter++);
+    private String novaTemporaria() {
+        return "%t" + (contadorVariavelTemporaria++);
     }
 
-    private String toLLVMType(String type) {
-        switch (type) {
+    private String paraLLVMTipo(String tipo) {
+        switch (tipo) {
             case "frequenciaMHz":
             case "inteiro":
                 return "i32";
@@ -41,38 +41,38 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
             case "void":
                 return "void";
             default:
-                if (type.endsWith("]")) {
-                    String baseType = type.substring(0, type.indexOf('['));
-                    String llvmBaseType = toLLVMType(baseType);
-                    String size = type.substring(type.indexOf('[') + 1, type.indexOf(']'));
-                    return "[" + size + " x " + llvmBaseType + "]";
+                if (tipo.endsWith("]")) {
+                    String tipoBase = tipo.substring(0, tipo.indexOf('['));
+                    String tipoBaseLlvm = paraLLVMTipo(tipoBase);
+                    String tamanho = tipo.substring(tipo.indexOf('[') + 1, tipo.indexOf(']'));
+                    return "[" + tamanho + " x " + tipoBaseLlvm + "]";
                 }
-                return "i32"; // Tipo padrão
+                return "i32";
         }
     }
 
     @Override
     public Void visitClassDeclaration(ObjectOrientedParser.ClassDeclarationContext ctx) {
-        String className = ctx.IDENTIFIER().getText();
-        llvmIr.append("; ModuleID = '").append(className).append("'\n");
-        llvmIr.append("source_filename = \"").append(className).append(".cid\"\n\n");
+        String nomeClasse = ctx.IDENTIFIER().getText();
+        codigoLlvm.append("; ModuleID = '").append(nomeClasse).append("'\n");
+        codigoLlvm.append("source_filename = \"").append(nomeClasse).append(".cid\"\n\n");
         visitChildren(ctx);
         return null;
     }
 
     @Override
     public Void visitFieldDeclaration(ObjectOrientedParser.FieldDeclarationContext ctx) {
-        String type = ctx.type().getText();
-        String llvmType = toLLVMType(type);
+        String tipo = ctx.type().getText();
+        String tipoLlvm = paraLLVMTipo(tipo);
 
         for (ObjectOrientedParser.VariableDeclaratorContext varCtx : ctx.variableDeclaratorList().variableDeclarator()) {
-            String varName = varCtx.IDENTIFIER().getText();
-            symbolTable.put(varName, type);
+            String nomeVariavel = varCtx.IDENTIFIER().getText();
+            tabelaSimbolos.put(nomeVariavel, tipo);
 
             if (varCtx.LBRACK().size() > 0) {
-                llvmIr.append("@").append(varName).append(" = common global [10 x ").append(llvmType).append("] zeroinitializer, align 16\n");
+                codigoLlvm.append("@").append(nomeVariavel).append(" = common global [10 x ").append(tipoLlvm).append("] zeroinitializer, align 16\n");
             } else {
-                llvmIr.append("@").append(varName).append(" = common global ").append(llvmType).append(" 0, align 4\n");
+                codigoLlvm.append("@").append(nomeVariavel).append(" = common global ").append(tipoLlvm).append(" 0, align 4\n");
             }
         }
         return null;
@@ -80,40 +80,40 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
 
     @Override
     public Void visitMethodDeclaration(ObjectOrientedParser.MethodDeclarationContext ctx) {
-        String methodName = ctx.IDENTIFIER().getText();
-        String returnType = ctx.typeOrVoid().getText();
-        String llvmReturnType = toLLVMType(returnType);
+        String nomeMetodo = ctx.IDENTIFIER().getText();
+        String tipoRetorno = ctx.typeOrVoid().getText();
+        String tipoRetornoLlvm = paraLLVMTipo(tipoRetorno);
 
-        StringBuilder params = new StringBuilder();
+        StringBuilder parametros = new StringBuilder();
         if (ctx.formalParameterList() != null) {
-            boolean first = true;
+            boolean primeiro = true;
             if (ctx.formalParameterList().formalParameter() != null) {
                 for (var param : ctx.formalParameterList().formalParameter()) {
-                    if (!first) {
-                        params.append(", ");
+                    if (!primeiro) {
+                        parametros.append(", ");
                     }
-                    String paramType = param.type().getText();
-                    String paramName = param.variableDeclaratorId().getText();
-                    String llvmParamType = toLLVMType(paramType);
-                    params.append(llvmParamType).append(" %").append(paramName);
-                    symbolTable.put(paramName, paramType);
-                    first = false;
+                    String tipoParam = param.type().getText();
+                    String nomeParam = param.variableDeclaratorId().getText();
+                    String tipoParamLlvm = paraLLVMTipo(tipoParam);
+                    parametros.append(tipoParamLlvm).append(" %").append(nomeParam);
+                    tabelaSimbolos.put(nomeParam, tipoParam);
+                    primeiro = false;
                 }
             }
         }
 
-        llvmIr.append("\ndefine ").append(llvmReturnType).append(" @").append(methodName).append("(").append(params.toString()).append(") #0 {\n");
+        codigoLlvm.append("\ndefine ").append(tipoRetornoLlvm).append(" @").append(nomeMetodo).append("(").append(parametros.toString()).append(") #0 {\n");
 
         visit(ctx.block());
 
-        if (llvmReturnType.equals("void")) {
-            llvmIr.append("  ret void\n");
-        } else if (!llvmIr.toString().endsWith("ret i32 0\n")) {
-            llvmIr.append("  ret ").append(llvmReturnType).append(" 0\n");
+        if (tipoRetornoLlvm.equals("void")) {
+            codigoLlvm.append("  ret void\n");
+        } else if (!codigoLlvm.toString().endsWith("ret i32 0\n")) {
+            codigoLlvm.append("  ret ").append(tipoRetornoLlvm).append(" 0\n");
         }
 
-        llvmIr.append("}\n");
-        symbolTable.clear();
+        codigoLlvm.append("}\n");
+        tabelaSimbolos.clear();
         return null;
     }
 
@@ -125,45 +125,43 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
     @Override
     public Void visitStatement(ObjectOrientedParser.StatementContext ctx) {
         if (ctx.RETURN() != null && ctx.expression() != null && !ctx.expression().isEmpty()) {
-            String value = ctx.expression(0).getText();
-            String tempVar = newTemp();
+            String valor = ctx.expression(0).getText();
+            String varTemporaria = novaTemporaria();
 
-            if (symbolTable.containsKey(value)) {
-                String type = symbolTable.get(value);
-                String llvmType = toLLVMType(type);
-                llvmIr.append("  ").append(tempVar).append(" = load ").append(llvmType).append(", ").append(llvmType).append("* %").append(value).append(", align 4\n");
-                llvmIr.append("  ret ").append(llvmType).append(" ").append(tempVar).append("\n");
+            if (tabelaSimbolos.containsKey(valor)) {
+                String tipo = tabelaSimbolos.get(valor);
+                String tipoLlvm = paraLLVMTipo(tipo);
+                codigoLlvm.append("  ").append(varTemporaria).append(" = load ").append(tipoLlvm).append(", ").append(tipoLlvm).append("* %").append(valor).append(", align 4\n");
+                codigoLlvm.append("  ret ").append(tipoLlvm).append(" ").append(varTemporaria).append("\n");
             } else {
-                String llvmType = toLLVMType("inteiro");
-                if(value.contains(".")) llvmType = toLLVMType("real");
-                llvmIr.append("  ret ").append(llvmType).append(" ").append(value).append("\n");
+                String tipoLlvm = paraLLVMTipo("inteiro");
+                if(valor.contains(".")) tipoLlvm = paraLLVMTipo("real");
+                codigoLlvm.append("  ret ").append(tipoLlvm).append(" ").append(valor).append("\n");
             }
 
         } else if (ctx.IF() != null) {
-            String condVar = newTemp();
-            String thenLabel = newLabel();
-            String elseLabel = newLabel();
-            String endLabel = newLabel();
+            String varCondicao = novaTemporaria();
+            String rotuloEntao = novoRotulo();
+            String rotuloSenao = novoRotulo();
+            String rotuloFim = novoRotulo();
 
             visit(ctx.parExpression().expression());
-            String lastTemp = "%t" + (tempVarCounter - 1);
+            String ultimaTemporaria = "%t" + (contadorVariavelTemporaria - 1);
 
-            llvmIr.append("  ").append(condVar).append(" = icmp ne i32 ").append(lastTemp).append(", 0\n");
-            llvmIr.append("  br i1 ").append(condVar).append(", label %").append(thenLabel).append(", label %").append(elseLabel).append("\n");
+            codigoLlvm.append("  ").append(varCondicao).append(" = icmp ne i32 ").append(ultimaTemporaria).append(", 0\n");
+            codigoLlvm.append("  br i1 ").append(varCondicao).append(", label %").append(rotuloEntao).append(", label %").append(rotuloSenao).append("\n");
 
-            // Bloco 'then'
-            llvmIr.append(thenLabel).append(":\n");
+            codigoLlvm.append(rotuloEntao).append(":\n");
             visit(ctx.statement(0));
-            llvmIr.append("  br label %").append(endLabel).append("\n");
+            codigoLlvm.append("  br label %").append(rotuloFim).append("\n");
 
-            // Bloco 'else'
-            llvmIr.append(elseLabel).append(":\n");
+            codigoLlvm.append(rotuloSenao).append(":\n");
             if (ctx.ELSE() != null) {
                 visit(ctx.statement(1));
             }
-            llvmIr.append("  br label %").append(endLabel).append("\n");
+            codigoLlvm.append("  br label %").append(rotuloFim).append("\n");
 
-            llvmIr.append(endLabel).append(":\n");
+            codigoLlvm.append(rotuloFim).append(":\n");
         }
 
         return visitChildren(ctx);
@@ -173,32 +171,33 @@ public class IntermediateCodeGenerator extends ObjectOrientedParserBaseVisitor<V
     public Void visitExpression(ObjectOrientedParser.ExpressionContext ctx) {
         if (ctx.assignmentExpression() != null && ctx.assignmentExpression().conditionalExpression().size() > 1) {
         } else if (ctx.assignmentExpression() != null && ctx.assignmentExpression().getText().contains("+")) {
-            String[] parts = ctx.assignmentExpression().getText().split("\\+");
-            String left = parts[0].trim();
-            String right = parts[1].trim();
-            String tempLeft = newTemp();
-            String tempRight = newTemp();
-            String result = newTemp();
+            String[] partes = ctx.assignmentExpression().getText().split("\\+");
+            if (partes.length >= 2) {
+                String esquerda = partes[0].trim();
+                String direita = partes[1].trim();
+                String temporariaEsquerda = novaTemporaria();
+                String temporariaDireita = novaTemporaria();
+                String resultado = novaTemporaria();
 
-            llvmIr.append("  ").append(tempLeft).append(" = load i32, i32* %").append(left).append("\n");
-            llvmIr.append("  ").append(tempRight).append(" = load i32, i32* %").append(right).append("\n");
-            llvmIr.append("  ").append(result).append(" = add nsw i32 ").append(tempLeft).append(", ").append(tempRight).append("\n");
-
+                codigoLlvm.append("  ").append(temporariaEsquerda).append(" = load i32, i32* %").append(esquerda).append("\n");
+                codigoLlvm.append("  ").append(temporariaDireita).append(" = load i32, i32* %").append(direita).append("\n");
+                codigoLlvm.append("  ").append(resultado).append(" = add nsw i32 ").append(temporariaEsquerda).append(", ").append(temporariaDireita).append("\n");
+            }
         }
         return visitChildren(ctx);
     }
 
 
-    public void generateFile(String fileName) {
-        try (PrintWriter writer = new PrintWriter(fileName)) {
-            writer.write(llvmIr.toString());
-            System.out.println("LLVM IR salvo em " + fileName);
+    public void generateFile(String nomeArquivo) {
+        try (PrintWriter escritor = new PrintWriter(nomeArquivo)) {
+            escritor.write(codigoLlvm.toString());
+            System.out.println("Código LLVM IR salvo em " + nomeArquivo);
         } catch (IOException e) {
-            System.err.println("Erro ao salvar LLVM IR: " + e.getMessage());
+            System.err.println("Erro ao salvar código LLVM IR: " + e.getMessage());
         }
     }
 
     public String getIRCode() {
-        return llvmIr.toString();
+        return codigoLlvm.toString();
     }
 }

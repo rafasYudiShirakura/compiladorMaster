@@ -9,11 +9,9 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
     public ASTNode visitClassDeclaration(ObjectOrientedParser.ClassDeclarationContext ctx) {
         String className = ctx.IDENTIFIER().getText();
         ClassNode classNode = new ClassNode(className);
-        
-        // Set position information
+
         classNode.setPosition(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
-        
-        // Visit class body
+
         if (ctx.classBody() != null) {
             ASTNode bodyNode = visit(ctx.classBody());
             if (bodyNode != null) {
@@ -50,9 +48,8 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitFieldDeclaration(ObjectOrientedParser.FieldDeclarationContext ctx) {
         String fieldType = ctx.type().getText();
-        
-        // Handle multiple field declarations
-        ASTNode fieldsNode = new ASTNode("FIELDS") {
+
+        ASTNode fieldsNode = new ASTNode("CAMPO") {
             @Override
             public String toString() {
                 return "Field Declarations";
@@ -67,8 +64,7 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
                 if (varCtx.variableInitializer() != null) {
                     String initialValue = varCtx.variableInitializer().getText();
                     fieldNode = new FieldNode(fieldName, fieldType, initialValue);
-                    
-                    // Add initializer as child
+
                     ASTNode initNode = visit(varCtx.variableInitializer());
                     if (initNode != null) {
                         fieldNode.addChild(initNode);
@@ -89,7 +85,7 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
     public ASTNode visitMethodDeclaration(ObjectOrientedParser.MethodDeclarationContext ctx) {
         String methodName = ctx.IDENTIFIER().getText();
         String returnType = "void";
-        String visibility = "public"; // default
+        String visibility = "public";
         
         if (ctx.typeOrVoid() != null) {
             returnType = ctx.typeOrVoid().getText();
@@ -98,7 +94,6 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
         MethodNode methodNode = new MethodNode(methodName, returnType, visibility);
         methodNode.setPosition(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
         
-        // Add parameters
         if (ctx.formalParameterList() != null) {
             ASTNode paramsNode = visit(ctx.formalParameterList());
             if (paramsNode != null) {
@@ -106,7 +101,6 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
             }
         }
         
-        // Add method body
         if (ctx.block() != null) {
             ASTNode bodyNode = visit(ctx.block());
             if (bodyNode != null) {
@@ -151,10 +145,10 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
     
     @Override
     public ASTNode visitBlock(ObjectOrientedParser.BlockContext ctx) {
-        ASTNode blockNode = new ASTNode("BLOCK") {
+        ASTNode blockNode = new ASTNode("BLOCO") {
             @Override
             public String toString() {
-                return "Block";
+                return "Bloco";
             }
         };
         
@@ -190,7 +184,6 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
             StatementNode ifNode = new StatementNode("IF");
             ifNode.setPosition(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
             
-            // Add condition
             if (ctx.parExpression() != null) {
                 ASTNode conditionNode = visit(ctx.parExpression());
                 if (conditionNode != null) {
@@ -198,14 +191,12 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
                 }
             }
             
-            // Add then statement
             if (ctx.statement() != null && !ctx.statement().isEmpty()) {
                 ASTNode thenNode = visit(ctx.statement(0));
                 if (thenNode != null) {
                     ifNode.addChild(thenNode);
                 }
                 
-                // Add else statement if present
                 if (ctx.statement().size() > 1) {
                     ASTNode elseNode = visit(ctx.statement(1));
                     if (elseNode != null) {
@@ -225,9 +216,36 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
             return visit(ctx.expressionStatement());
         }
         
-        // Handle other statement types as needed
-        
+        if (ctx.ioStatement() != null) {
+            return visit(ctx.ioStatement());
+        }
+
         return new StatementNode("UNKNOWN", ctx.getText());
+    }
+    
+    @Override
+    public ASTNode visitIoStatement(ObjectOrientedParser.IoStatementContext ctx) {
+        if (ctx.PRINTF() != null) {
+            StatementNode printfNode = new StatementNode("PRINTF");
+            printfNode.setPosition(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+            
+            if (ctx.expression() != null) {
+                ASTNode exprNode = visit(ctx.expression());
+                if (exprNode != null) {
+                    printfNode.addChild(exprNode);
+                }
+            }
+            
+            return printfNode;
+        }
+        
+        if (ctx.SCANF() != null) {
+            StatementNode scanfNode = new StatementNode("SCANF");
+            scanfNode.setPosition(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+            return scanfNode;
+        }
+        
+        return new StatementNode("IO", ctx.getText());
     }
     
     @Override
@@ -368,10 +386,38 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
             return visit(ctx.expression());
         }
         
+        if (ctx.ioExpression() != null) {
+            return visit(ctx.ioExpression());
+        }
+        
         return new ExpressionNode("PRIMARY", ctx.getText());
     }
     
-    // Handle other expression types
+    @Override
+    public ASTNode visitIoExpression(ObjectOrientedParser.IoExpressionContext ctx) {
+        if (ctx.SCANF() != null) {
+            ExpressionNode scanfNode = new ExpressionNode("SCANF", "lerEntradaSensor()");
+            scanfNode.setPosition(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+            return scanfNode;
+        }
+        
+        if (ctx.PRINTF() != null) {
+            ExpressionNode printfNode = new ExpressionNode("PRINTF", "mostrarDisplay");
+            printfNode.setPosition(ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+            
+            if (ctx.expression() != null) {
+                ASTNode exprNode = visit(ctx.expression());
+                if (exprNode != null) {
+                    printfNode.addChild(exprNode);
+                }
+            }
+            
+            return printfNode;
+        }
+        
+        return new ExpressionNode("IO_EXPR", ctx.getText());
+    }
+    
     @Override
     protected ASTNode defaultResult() {
         return null;
@@ -386,7 +432,6 @@ public class ASTBuilder extends ObjectOrientedParserBaseVisitor<ASTNode> {
             return aggregate;
         }
         
-        // If both are non-null, create a container node
         ASTNode container = new ASTNode("AGGREGATE") {
             @Override
             public String toString() {
