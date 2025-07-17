@@ -16,7 +16,7 @@ public class Main {
     public static void main(String[] args) {
         if (args.length == 0) {
             System.err.println("Por favor, forneça o caminho para o arquivo de entrada como um argumento.");
-            System.err.println("Exemplo: src/main/java/org/example/testeErroSemantico.txt");
+            System.err.println("Exemplo: src/main/java/org/example/testeFinal.txt");
             return;
         }
         String arquivoEntrada = args[0];

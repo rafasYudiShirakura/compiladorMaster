@@ -1,10 +1,123 @@
 === Árvore de sintaxe abstrata (AST) ===
-AST Raiz: Class: TesteErro
-├── Class: TesteErro
-  ├── Field: frequenciaMHz numero = "texto"
-    ├── Literal: STRING = "texto"
-  ├── Field: tipoInexistente variavel = 42
+AST Raiz: Class: CompiladorCompleto
+├── Class: CompiladorCompleto
+  ├── Field: frequenciaMHz inteiro = 42
     ├── Literal: INTEGER = 42
-  ├── Method: public sinalDeAck metodoSemRetorno()
+  ├── Field: tensaoVolts real = 3.14159
+    ├── Literal: FLOAT = 3.14159
+  ├── Field: codigoPostDisplay caractere = 'X'
+    ├── Literal: CHAR = 'X'
+  ├── Field: string texto = "Compilador Orientado a Objetos"
+    ├── Literal: STRING = "Compilador Orientado a Objetos"
+  ├── Field: frequenciaMHz[] numeros = {10,20,30,40,50}
+    ├── Array Initializer
+      ├── Literal: INTEGER = 10
+      ├── Literal: INTEGER = 20
+      ├── Literal: INTEGER = 30
+      ├── Literal: INTEGER = 40
+      ├── Literal: INTEGER = 50
+  ├── Field: tensaoVolts[] decimais = {1.1,2.2,3.3,4.4}
+    ├── Array Initializer
+      ├── Literal: FLOAT = 1.1
+      ├── Literal: FLOAT = 2.2
+      ├── Literal: FLOAT = 3.3
+      ├── Literal: FLOAT = 4.4
+  ├── Method: public frequenciaMHz soma()
+    ├── Parameters
+      ├── Parameter: frequenciaMHz a
+      ├── Parameter: frequenciaMHz b
     ├── Bloco
+      ├── Statement: RETURN
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [a]
+          ├── Expression: IDENTIFIER [b]
+  ├── Method: public frequenciaMHz multiplicacao()
+    ├── Parameters
+      ├── Parameter: frequenciaMHz x
+      ├── Parameter: frequenciaMHz y
+    ├── Bloco
+      ├── Field: frequenciaMHz resultado = x*y
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [x]
+          ├── Expression: IDENTIFIER [y]
+      ├── Statement: RETURN
+        ├── Expression: IDENTIFIER [resultado]
+  ├── Method: public frequenciaMHz maiorValor()
+    ├── Parameters
+      ├── Parameter: frequenciaMHz num1
+      ├── Parameter: frequenciaMHz num2
+    ├── Bloco
+      ├── Statement: IF
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [num1]
+          ├── Expression: IDENTIFIER [num2]
+        ├── Bloco
+          ├── Statement: RETURN
+            ├── Expression: IDENTIFIER [num1]
+        ├── Bloco
+          ├── Statement: RETURN
+            ├── Expression: IDENTIFIER [num2]
+  ├── Method: public string classificarNumero()
+    ├── Parameters
+      ├── Parameter: frequenciaMHz valor
+    ├── Bloco
+      ├── Statement: IF
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [valor]
+          ├── Literal: INTEGER = 0
+        ├── Bloco
+          ├── Statement: IF
+            ├── Multiple Results
+              ├── Expression: IDENTIFIER [valor]
+              ├── Literal: INTEGER = 100
+            ├── Bloco
+              ├── Statement: RETURN
+                ├── Literal: STRING = "Grande"
+            ├── Bloco
+              ├── Statement: RETURN
+                ├── Literal: STRING = "Pequeno Positivo"
+        ├── Bloco
+          ├── Statement: RETURN
+            ├── Literal: STRING = "Negativo ou Zero"
+  ├── Method: public frequenciaMHz calcularExpressao()
+    ├── Parameters
+      ├── Parameter: frequenciaMHz a
+      ├── Parameter: frequenciaMHz b
+      ├── Parameter: frequenciaMHz c
+    ├── Bloco
+      ├── Field: frequenciaMHz resultado = a+b+c
+        ├── Multiple Results
+          ├── Multiple Results
+            ├── Expression: IDENTIFIER [a]
+            ├── Expression: IDENTIFIER [b]
+          ├── Expression: IDENTIFIER [c]
+      ├── Statement: RETURN
+        ├── Expression: IDENTIFIER [resultado]
+  ├── Method: public tensaoVolts operacoesComplexas()
+    ├── Parameters
+      ├── Parameter: tensaoVolts x
+      ├── Parameter: tensaoVolts y
+    ├── Bloco
+      ├── Field: tensaoVolts resultado1 = x+y
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [x]
+          ├── Expression: IDENTIFIER [y]
+      ├── Field: tensaoVolts resultado2 = x*y
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [x]
+          ├── Expression: IDENTIFIER [y]
+      ├── Field: tensaoVolts resultado3 = resultado1/resultado2
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [resultado1]
+          ├── Expression: IDENTIFIER [resultado2]
+      ├── Statement: IF
+        ├── Multiple Results
+          ├── Expression: IDENTIFIER [resultado3]
+          ├── Literal: FLOAT = 1.0
+        ├── Bloco
+          ├── Statement: RETURN
+            ├── Expression: IDENTIFIER [resultado3]
+        ├── Bloco
+          ├── Statement: RETURN
+            ├── Literal: FLOAT = 1.0
 ===================================
